@@ -1,0 +1,172 @@
+<apex:page showHeader="false" controller="OcdlaCheckoutTemplateController" standardStylesheets="false" docType="html-5.0" applyHtmlTag="false" cache="false" applyBodyTag="false">
+    
+
+    <apex:variable var="cacheKey" value="{!cacheKey}" />
+
+
+    <apex:variable var="cdn" value="{!cdn}" />
+    <apex:variable var="domain" value="{!cdn}" />
+    
+    <html>
+        
+        <head>
+             
+            <apex:insert name="title" />
+            <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            
+
+            <apex:repeat value="{!styles}" var="css">
+            	<apex:variable var="type" value="{!css.type}" rendered="{!css.isStaticResource}">
+		            <apex:stylesheet value="{!URLFOR($Resource[css.name])}" /> 
+				</apex:variable>
+            	<apex:variable var="type" value="{!css.type}" rendered="{!!css.isStaticResource}">
+                    <link href="{!css.url}" type="text/css" rel="stylesheet" />
+				</apex:variable>
+            </apex:repeat>
+            
+ 
+            
+            <apex:insert name="styles" />
+            
+
+            <script type="text/javascript">
+                var CURRENT_PAGE = '{!$CurrentPage.URL}';
+                var OCDLA_CURRENT_PAGE = '{!$CurrentPage.URL}';
+            </script>
+
+            
+ 
+            <apex:repeat value="{!scripts}" var="js">
+            	<apex:variable var="type" value="{!js.type}" rendered="{!js.isStaticResource}">
+		            <apex:includeScript value="{!URLFOR($Resource[js.name])}" /> 
+				</apex:variable>
+            	<apex:variable var="type" value="{!js.type}" rendered="{!!js.isStaticResource}">
+                    <script type="text/javascript" data-main="{!js.dataMain}" src="{!js.url}">
+                    </script>
+				</apex:variable>
+            </apex:repeat>
+
+
+            
+            <apex:insert name="scripts" />
+
+
+	
+
+            
+            <script type="text/javascript">
+                if(!window.console){
+                    window.console = function(){ return false; };   
+                }
+            </script>
+            
+            
+        </head>
+        
+        <body class="hasFixedNav oneColumn">  
+            <!-- This is the OcdlaPageTemplateStore.vfp template file -->
+            <header id="banner">
+                <div class="user-info-container" style="height:43px;">
+                    <div class="content">    
+
+                        <ul class="user-info">
+                            <li class="user-info-panel" id="user-info" style="cursor:pointer;">
+                                <apex:outputPanel layout="none" rendered="{!isUserLoggedIn}">
+                                    <a href="{!profileUrl}">Welcome, {!currentUser.FirstName}</a>
+                                </apex:outputPanel>
+                                
+                                <apex:outputPanel layout="none" rendered="{!!isUserLoggedIn}">
+                                    <a href="{!loginUrl}">Welcome, Guest</a>
+                                </apex:outputPanel>
+                            </li>
+                            <li class="user-info-panel" id="user-login" style="cursor:pointer;">
+                                <apex:outputPanel layout="none" rendered="{!isUserLoggedIn}">
+                                    <a href="{!logoutUrl}">Logout</a>
+                                </apex:outputPanel>
+                                
+                                <apex:outputPanel layout="none" rendered="{!!isUserLoggedIn}">
+                                    <a href="{!loginUrl}">Login</a>
+                                </apex:outputPanel>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                
+                <div class="nav">
+                    <div class="content">
+                        <a href="//www.ocdla.org" class="logo">&nbsp;</a>
+                        <apex:outputText escape="false" value="{!navMenu}" />
+                    </div>
+                </div>
+            </header>
+            
+
+            
+            <div class="page-wrapper">
+            <style type="text/css">
+            .checkout-panel {
+                display:block;
+                width: auto;
+                }
+                
+                .select {
+    padding: 15px;
+    border: 1px solid #999;
+    margin-bottom: 8px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.content, .checkout-panel .content, .checkout-contact-panel .content {
+    padding: 0px;
+}
+                
+                .label {
+                font-family: Helvetica;
+                }
+                
+.order-total {
+    background-image: linear-gradient(351deg, #1e7d0c, #27be10);
+    display: inline-block;
+    padding: 10px;
+    border-radius: 4px;
+    color: #fff;
+}
+                
+                .column {
+                	padding: 25px;
+                }
+                
+                .actions a {
+                	display: inline-block;
+                margin-right: 8px;
+                }
+                
+                .bold-and-small {
+                	font-size: smaller;
+                font-weight: bold;
+                font-family: Helvetica;
+                display: block;
+                }
+            </style>
+                <apex:insert name="body" />                
+            </div>            
+            
+
+            
+            <apex:repeat value="{!footerScripts}" var="js">
+                <script type="text/javascript" data-main="{!js.dataMain}" src="{!js.url}?{!cacheKey}">
+                </script>
+            </apex:repeat>
+
+
+        </body>
+        
+
+        
+
+        
+    </html>    
+</apex:page>

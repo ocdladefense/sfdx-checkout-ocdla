@@ -1,0 +1,117 @@
+<apex:page controller="PaymentMethodController" showHeader="false" standardStylesheets="true" docType="html-5.0" cache="false" applyHtmlTag="false" applyBodyTag="false">
+    
+    
+    <apex:composition template="{!template}">
+        
+        <apex:define name="title">
+            <title>The Page Title</title> 
+        </apex:define>
+        
+        <apex:define name="styles">
+            
+            <link rel="stylesheet" type="text/css" href="https://{!cdn}/sites/default/modules/checkout/css/checkout.css?{!cacheKey}" />
+            <!-- let's override some of these styles -->
+            <style type="text/css">
+            
+            .panel-closed {
+                max-height: 100%;   
+			}
+            </style>
+        </apex:define>
+        
+        <apex:define name="scripts">
+        
+            
+            <script type="text/javascript">
+            function newCard() {
+                document.getElementById("card-data").setAttribute("style", "display:block");
+            }
+
+            function setBillingStateCode(event) {
+                console.log(event.target.value);
+            }
+
+            function setShippingStateCode(event) {
+                console.log(event.target.value);
+            }
+            </script>
+
+            
+        </apex:define>
+        
+         
+
+        
+        <apex:define name="body">
+            <style type="text/css">
+            .checkout-panel {
+                display:block;
+                width: auto;
+                }
+                
+                .select {
+    padding: 15px;
+    border: 1px solid #999;
+    margin-bottom: 8px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.content, .checkout-panel .content, .checkout-contact-panel .content {
+    padding: 0px;
+}
+                
+                .label {
+                font-family: Helvetica;
+                }
+                
+.order-total {
+    background-image: linear-gradient(351deg, #1e7d0c, #27be10);
+    display: inline-block;
+    padding: 10px;
+    border-radius: 4px;
+    color: #fff;
+}
+                
+                .column {
+                	padding: 25px;
+                }
+            </style>
+            <apex:pageMessages id="myPageMessages" />
+            
+                <div id="checkout-app">
+                    
+                    <div class="column">
+                   
+                            <apex:form id="customerPaymentProfile">
+                                <apex:pageBlock title="{!title}">
+                            
+                                    <c:CreditCardForm c="{!card}" title="Enter your payment information"></c:CreditCardForm>
+                            
+                                    <c:AddressForm a="{!billTo}" title="Enter billing address"></c:AddressForm>
+                            
+                                    <apex:pageBlockSection title="Make this my default payment method?" columns="1">
+                                        <apex:inputCheckbox value="{!isDefaultPaymentMethod}">Default Payment Method: </apex:inputCheckbox>
+                                    </apex:pageBlockSection>
+
+                                    <apex:pageBlockButtons >
+                                        <apex:commandButton value="Add" action="{!doCreateAction}" rendered="{!action == 'new'}" />
+                                        <apex:commandButton value="Update" action="{!doEditAction}" rendered="{!action != 'new'}" />
+                                        <apex:commandButton value="Cancel" action="{!cancel}" />
+                                    </apex:pageBlockButtons>
+                            
+                                </apex:pageBlock>
+                            </apex:form>
+                        
+                    </div>
+                    
+                    
+                    
+
+                </div>
+            
+        </apex:define>
+        
+    </apex:composition>
+    
+    
+</apex:page>

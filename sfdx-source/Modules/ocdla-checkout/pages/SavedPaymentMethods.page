@@ -1,0 +1,159 @@
+<apex:page controller="SavedPaymentMethodsController" showHeader="false" standardStylesheets="false" docType="html-5.0" cache="false" applyHtmlTag="false" applyBodyTag="false">
+    
+    
+    <apex:composition template="{!template}">
+        
+        <apex:define name="title">
+            <title>The Page Title</title> 
+        </apex:define>
+        
+        <apex:define name="styles">
+            
+            <link rel="stylesheet" type="text/css" href="https://{!cdn}/sites/default/modules/checkout/css/checkout.css?{!cacheKey}" />
+            <!-- let's override some of these styles -->
+            <style type="text/css">
+            
+            .panel-closed {
+                max-height: 100%;   
+			}
+            </style>
+        </apex:define>
+        
+        <apex:define name="scripts">
+        
+            
+            <script type="text/javascript">
+            function newCard() {
+                document.getElementById("card-data").setAttribute("style", "display:block");
+            }
+
+            function setBillingStateCode(event) {
+                console.log(event.target.value);
+            }
+
+            function setShippingStateCode(event) {
+                console.log(event.target.value);
+            }
+            </script>
+
+            
+        </apex:define>
+        
+         
+
+        
+        <apex:define name="body">
+            <style type="text/css">
+            .checkout-panel {
+                display:block;
+                width: auto;
+                }
+                
+                .select {
+    padding: 15px;
+    border: 1px solid #999;
+    margin-bottom: 8px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.content, .checkout-panel .content, .checkout-contact-panel .content {
+    padding: 0px;
+}
+                
+                .label {
+                font-family: Helvetica;
+                }
+                
+.order-total {
+    background-image: linear-gradient(351deg, #1e7d0c, #27be10);
+    display: inline-block;
+    padding: 10px;
+    border-radius: 4px;
+    color: #fff;
+}
+                
+                .column {
+                	padding: 25px;
+                }
+            </style>
+            <apex:pageMessages showDetail="True" id="myPageMessages" />
+            
+                <div id="checkout-app">
+                    
+                    <div class="column">
+                   
+<apex:form id="paymentForm">
+
+    {!c.FirstName & ' ' & c.LastName}
+
+    <apex:commandLink action="{!redirectToPaymentMethod}" value="Add Payment Method">
+        <apex:param name="action" value="new" />
+    </apex:commandLink>
+
+
+
+    <div class="content">
+        <apex:repeat value="{!paymentProfiles}" var="profile" rendered="{!IF(paymentProfiles.size != 0, true, false)}">
+
+
+            <div class="select">
+
+                <apex:outputText styleClass="bold-and-small" value="Default" rendered="{!IF(profile.defaultPaymentProfile, true, false)}" />
+                <span class="card-data">{!profile.billTo.firstName & ' ' & profile.billTo.lastName}</span>
+                <br />
+                <span class="card-data">{!profile.payment.creditCard.cardType} {!profile.payment.creditCard.cardNumber}</span>
+                <span class="card-data">exp. {!profile.payment.creditCard.expirationDate}</span>
+
+                <br />
+
+                <div class="actions">
+
+
+                    <apex:commandLink value="Edit" action="{!redirectToPaymentMethod}">
+                        <apex:param name="action" value="update" />
+                        <apex:param name="paymentProfileId" value="{!profile.customerPaymentProfileId}" />
+                    </apex:commandLink>
+
+
+                    <apex:commandLink value="Delete" onclick="if (!confirmDeletion('{!profile.payment.creditCard.cardNumber}')) return false;" oncomplete="refreshPage();" action="{!deletePaymentProfile}">
+                        <apex:param name="paymentProfileId" value="{!profile.customerPaymentProfileId}" />
+                    </apex:commandLink>
+
+                    <apex:commandLink value="Set Default" oncomplete="refreshPage();" rendered="{!IF(profile.defaultPaymentProfile, false, true)}" action="{!setDefaultPaymentProfile}">
+                        <apex:param name="paymentProfileId" value="{!profile.customerPaymentProfileId}" />
+                    </apex:commandLink>
+
+
+
+                </div>
+
+            </div>
+        </apex:repeat>
+    </div>
+
+
+</apex:form>
+<script>
+    function refreshPage() {
+        window.location.reload(true);
+    }
+
+    function confirmDeletion(cardNumber) {
+        var message = "Are you sure you want to delete the card ending in " + cardNumber.substring(cardNumber.length - 4) + "?";
+        return confirm(message);
+    }
+</script>
+                        
+                    </div>
+                    
+                    
+                    
+
+                </div>
+            
+        </apex:define>
+        
+    </apex:composition>
+    
+    
+</apex:page>
