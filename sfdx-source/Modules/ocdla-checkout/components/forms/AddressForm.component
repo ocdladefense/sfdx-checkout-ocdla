@@ -1,6 +1,6 @@
 <apex:component >
     <apex:attribute name="a" type="AuthNetAddress" required="true" description="Address of type AuthNetAddress, distinguished from the build-in Salesforce Address class."></apex:attribute>
-    <apex:attribute name="title" type="String" description="The title to be d" default="Enter address" />
+    <apex:attribute name="title" type="String" description="The title to be displayed for this form." default="Enter address" />
 
     <apex:pageBlockSection title="{!title}" columns="1">
         <apex:inputText value="{!a.firstName}" label="First Name" />

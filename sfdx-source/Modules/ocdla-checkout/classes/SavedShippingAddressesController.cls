@@ -22,17 +22,12 @@ public with sharing class SavedShippingAddressesController extends CommunityCont
         this.client = new AuthorizeDotNetClient();
      
         this.customerProfileId = CurrentCustomer.getCustomerProfileId();
-        
-        // CustomerProfile theProfile = new CustomerProfile(customerProfileId);
 
-        GetCustomerProfileRequest req = new GetCustomerProfileRequest();
-        req.setCustomerProfileId(this.customerProfileId);
-        GetCustomerProfileResponse resp = (GetCustomerProfileResponse) client.send(req);
-        
+
         CustomerProfile theProfile = this.loadCustomerProfile();
 
-        if(theProfile==null){
-            throw new CheckoutException ('customer profile must not be null');
+        if(theProfile == null) {
+            throw new CheckoutException('Customer profile must not be null');
         }
 
         //method will send getCustomerProfileRequest to get list of shipping addresses 
@@ -55,9 +50,9 @@ public with sharing class SavedShippingAddressesController extends CommunityCont
     public CustomerProfile loadCustomerProfile(){
         GetCustomerProfileRequest req = new GetCustomerProfileRequest();
         req.setCustomerProfileId(this.customerProfileId);
-        GetCustomerProfileResponse resp = (GetCustomerProfileResponse) client.send(req);
+        GetCustomerProfileResponse resp = (GetCustomerProfileResponse)client.send(req);
         
-        return resp.success()? resp.getProfile() : null;
+        return resp.success() ? resp.getProfile() : null;
     }
     
 
