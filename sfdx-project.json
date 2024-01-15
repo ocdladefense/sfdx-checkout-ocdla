@@ -5,8 +5,8 @@
     {
       "path": "sfdx-source/Modules/ocdla-checkout",
       "package": "OCDLACheckout",
-      "versionName": "ver 0.1",
-      "versionNumber": "0.1.0.NEXT",
+      "versionName": "ver 0.2",
+      "versionNumber": "0.2.1.NEXT",
       "default": false,
       "versionDescription": "Controllers and Views for OCDLA Checkout.",
       "dependencies": []
@@ -24,7 +24,6 @@
   "sourceApiVersion": "58.0",
   "packageAliases": {
     "OCDLACheckout": "0Ho5b000000PAtkCAG",
-    "AuthorizeDotNetApi": "0Ho3h0000008OmJCAU",
     "OCDLACheckout@0.1.0-2": "04tVJ0000000ZPBYA2",
     "OCDLACheckout@0.1.0-4": "04tVJ0000000a6jYAA",
     "OCDLACheckout@0.1.0-5": "04tVJ0000000a8LYAQ",
@@ -32,6 +31,8 @@
     "OCDLACheckout@0.1.0-7": "04tVJ0000000aEnYAI",
     "OCDLACheckout@0.1.0-8": "04tVJ0000000eS5YAI",
     "OCDLACheckout@0.1.0-9": "04tVJ0000000fb3YAA",
-    "OCDLACheckout@0.1.0-10": "04tVJ0000000fcfYAA"
+    "OCDLACheckout@0.1.0-10": "04tVJ0000000fcfYAA",
+    "OCDLACheckout@0.1.0-11": "04tVJ0000000iVhYAI",
+    "OCDLACheckout@0.1.1-1": "04tVJ0000000iXJYAY"
   }
 }

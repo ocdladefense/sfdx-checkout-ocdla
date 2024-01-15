@@ -1,6 +1,6 @@
 @isTest
 public class PaymentMethodControllerTests {
-
+  
     @isTest
     private static void loadRecordController() {
         
@@ -47,6 +47,9 @@ public class PaymentMethodControllerTests {
         con.doEditAction();
         con.doCreateAction();
         con.cancel();
+
+        con.getTemplate();
+        con.getConfig();
     }
     
     

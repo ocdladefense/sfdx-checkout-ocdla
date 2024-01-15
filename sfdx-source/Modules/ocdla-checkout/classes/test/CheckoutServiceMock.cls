@@ -1,4 +1,4 @@
-
+@isTest
 public class CheckoutServiceMock implements HttpCalloutMock {
     
 

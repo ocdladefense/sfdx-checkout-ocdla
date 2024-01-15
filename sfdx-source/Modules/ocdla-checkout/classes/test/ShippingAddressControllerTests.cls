@@ -2,77 +2,110 @@
 public class ShippingAddressControllerTests {
 
     
+
+    @testVisible
+    private static String customerProfileId = '527262';
+    
+    
     @isTest
-    private static void loadRecordController() {
+    private static void createShippingAddress() {
         
         AuthorizeDotNetServiceMock mock = new AuthorizeDotNetServiceMock();
-        // List<CustomerPaymentProfile> profiles = sampleCustomerPaymentProfileList();
-        
-		CurrentCustomer.setCustomerProfileId('527262');
-        
-        Map<String,String> data = new Map<String,String>();
-        data.put('profileType', 'regular');
-        data.put('customerProfileId', '527262');
-        data.put('merchantCustomerId', 'sforceContactId');
-        data.put('descriptiion', 'Customer description');
-        data.put('email', 'jbernal.web.dev@gmail.com');
-         
-        String init = JSON.serialize(data);
-        
-        CustomerProfile profile = (CustomerProfile)JSON.deserialize(init, CustomerProfile.class);        
-		// profile.setPaymentProfiles(profiles);
 
         
-        // mock.addCustomerProfile(profile);
-            
+        List<CustomerPaymentProfile> profiles = getCustomerPaymentProfileList();
+        List<AuthNetAddress> shipToList = getShippingAddressList();
         
-        if (Test.isRunningTest()){
+
+        
+        CustomerProfile profile = loadSampleCustomerProfile();
+		profile.setPaymentProfiles(profiles);
+        profile.setShipToList(shipToList);
+
+        if(Test.isRunningTest()) {
             Test.setMock(HttpCalloutMock.class, mock);
         }
 
         Test.setCurrentPage(Page.PaymentMethod);
+		CurrentCustomer.setCustomerProfileId(customerProfileId);
         
-
-
-        
+        // Test creating a new customer shipping address.
         Map<String,String> params = ApexPages.currentPage().getParameters();
-		params.put('customerAddressId', '905264263');
         params.put('action', 'new');
 
-         
         ShippingMethodController con = new ShippingMethodController();
-        
-        params.put('action', 'edit');
-		con = new ShippingMethodController();
-        con.shipTo.address = '123 My Lane';
-        con.shipTo.zip = '97330';
-        
-        con.doUpdateAction();
         con.doCreateAction();
         con.cancel();
     }
-    
-    
+
+
     
     @isTest
-    private static void loadController() {
+    private static void editShippingAddress() {
         
-        CheckoutServiceMock mock = new CheckoutServiceMock();
+        AuthorizeDotNetServiceMock mock = new AuthorizeDotNetServiceMock();
+        
         List<CustomerPaymentProfile> profiles = getCustomerPaymentProfileList();
         List<AuthNetAddress> shipToList = getShippingAddressList();
         
-		CurrentCustomer.setCustomerProfileId('527262');
+
+        
+        CustomerProfile profile = loadSampleCustomerProfile();
+		profile.setPaymentProfiles(profiles);
+        profile.setShipToList(shipToList);
+
+        
+        if(Test.isRunningTest()) {
+            Test.setMock(HttpCalloutMock.class, mock);
+        }
+
+        Test.setCurrentPage(Page.PaymentMethod);
+		CurrentCustomer.setCustomerProfileId(customerProfileId);
+        
+        // Test editing an existing customer shipping address.
+        Map<String,String> params = ApexPages.currentPage().getParameters();
+        params.put('action', 'edit');
+		params.put('customerAddressId', shipToList[0].getCustomerAddressId());
+
+        // Make some changes to the address that will be saved.
+        ShippingMethodController con = new ShippingMethodController();
+        con.shipTo.address = '123 My Lane';
+        con.shipTo.zip = '97330';
+        
+        // Commit the changes.
+        con.doUpdateAction();
+    }
+    
+      
+    
+    @testVisible
+    private static CustomerProfile loadSampleCustomerProfile() {
         
         Map<String,String> data = new Map<String,String>();
-        data.put('profileType', 'regular');
-        data.put('customerProfileId', '527262');
-        data.put('merchantCustomerId', 'sforceContactId');
-        data.put('descriptiion', 'Customer description');
+        data.put('profileType', CustomerProfile.CUSTOMER_TYPE_INDIVIDUAL);
+        data.put('customerProfileId', CurrentCustomer.getCustomerProfileId());
+        data.put('merchantCustomerId', 'idFromContact');
+        data.put('description', 'Salesforce customer.');
         data.put('email', 'jbernal.web.dev@gmail.com');
          
         String init = JSON.serialize(data);
         
-        CustomerProfile profile = (CustomerProfile)JSON.deserialize(init, CustomerProfile.class);        
+        return (CustomerProfile)JSON.deserialize(init, CustomerProfile.class);   
+    }
+
+    
+    
+    @isTest
+    private static void listSavedShippingAddresses() {
+        
+        CheckoutServiceMock mock = new CheckoutServiceMock();
+        
+        List<CustomerPaymentProfile> profiles = getCustomerPaymentProfileList();
+        List<AuthNetAddress> shipToList = getShippingAddressList();
+        
+		CurrentCustomer.setCustomerProfileId(customerProfileId);
+        
+        CustomerProfile profile = loadSampleCustomerProfile();
 		profile.setPaymentProfiles(profiles);
         profile.setShipToList(shipToList);
 
@@ -80,26 +113,30 @@ public class ShippingAddressControllerTests {
         mock.addCustomerProfile(profile);
             
         
-        if (Test.isRunningTest()){
+        if(Test.isRunningTest()) {
             Test.setMock(HttpCalloutMock.class, mock);
         }
 
         Test.setCurrentPage(Page.SavedShippingAddresses);
         
         SavedShippingAddressesController con = new SavedShippingAddressesController();
-        // con.getPaymentProfiles();
         
         Map<String,String> params = ApexPages.currentPage().getParameters();
-		params.put('customerAddressId', '123');
+		params.put('customerAddressId', shipToList[0].getCustomerAddressId());
         
         con.setShippingMethod();
         con.editThisAddress();
         con.deleteThisAddress();
     }
+
+
+ 
+        
+
     
-
-
-    public static List<AuthNetAddress> getShippingAddressList() {
+    
+	@testVisible
+    private static List<AuthNetAddress> getShippingAddressList() {
         List<AuthNetAddress> addresses = new List<AuthNetAddress>();
         
         AuthNetAddress addy1 = new AuthNetAddress('Jose', 'Bernal', '118 NW Jackson Ave.', 'Corvallis', 'OR', '97330');
@@ -113,8 +150,8 @@ public class ShippingAddressControllerTests {
     
     
     
-    // Test method
-    public static List<CustomerPaymentProfile> getCustomerPaymentProfileList() {
+    @testVisible
+    private static List<CustomerPaymentProfile> getCustomerPaymentProfileList() {
         List<CustomerPaymentProfile> profiles = new List<CustomerPaymentProfile>();
 
         //default valid Visa card
