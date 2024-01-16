@@ -23,15 +23,18 @@ public class CurrentCustomer {
         Contact c;
         
         // Contact Id associated with the current User.
-        Id contactId;
-        
-        
-     	u = [SELECT Id, ContactId FROM User WHERE Id = :UserInfo.getUserId()];
-		contactId = u.ContactId;
+        Id contactId = getCustomerId(UserInfo.getUserId());
          
+        if(null != contactId) {
+			c = [SELECT Id, AuthorizeDotNetCustomerProfileId__c, FirstName, LastName, Email FROM Contact WHERE Id = :contactId];
+            if(null == c) {
+				throw new CheckoutException('INVALID_CUSTOMER_ERROR: Cannot find related contact ('+contactId+').');
+            }
+        } else {
+            c = null;
+        }
         
-        c = null == contactId ? null : [SELECT FirstName, LastName, Email FROM Contact WHERE Id = :contactId];
-        
+        // In a test context, return a previously-defined customerProfileId value.
         if(Test.isRunningTest()) {
             return customerProfileId;
         } else {
@@ -39,4 +42,12 @@ public class CurrentCustomer {
         }  
 		
     }
+                                                     
+	@testVisible                                         
+	private static Id getCustomerId(Id userId) {
+                                 
+		User u = [SELECT Id, LinkedCustomerUser__c, ContactId FROM User WHERE Id = :userId];
+        
+        return null != u.LinkedCustomerUser__c ? getCustomerId(u.LinkedCustomerUser__c) : u.ContactId;
+	}
 }
