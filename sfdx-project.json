@@ -6,7 +6,7 @@
       "path": "sfdx-source/Modules/ocdla-checkout",
       "package": "OCDLACheckout",
       "versionName": "ver 0.2",
-      "versionNumber": "0.2.1.NEXT",
+      "versionNumber": "0.2.2.NEXT",
       "default": false,
       "versionDescription": "Controllers and Views for OCDLA Checkout.",
       "dependencies": []
