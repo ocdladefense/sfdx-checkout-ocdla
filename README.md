@@ -15,7 +15,7 @@ OCDLA would like to thank our spring and fall '23 web development interns for th
 * Alex Bedney, LCC, @AlexBedney
 
 
-## Dependenies
+## Dependencies
 
 ## Installation
 
