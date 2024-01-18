@@ -10,9 +10,9 @@ OCDLA would like to thank our spring and fall '23 web development interns for th
 
 
 ### Fall '23 interns
-* Mara Williams, LCC, @maracw(https://github.com/maracw)
-* Steven Brady, LCC, @bradysteven06
-* Alex Bedney, LCC, @AlexBedney
+* Mara Williams, LCC, [@maracw](https://github.com/maracw)
+* Steven Brady, LCC, [@bradysteven06](https://github.com/bradysteven06)
+* Alex Bedney, LCC, [@AlexBedney](https://github.com/AlexBedney)
 
 
 ## Dependencies
