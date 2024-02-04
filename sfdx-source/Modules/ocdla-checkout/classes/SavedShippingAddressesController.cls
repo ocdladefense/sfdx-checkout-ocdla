@@ -1,140 +1,122 @@
 public with sharing class SavedShippingAddressesController extends CommunityController {
 
-    AuthorizeDotNetClient client {get; set;}
 
-
-    String customerProfileId;
-
-    public Contact c {get; set;}
-    
     public List<AuthNetAddress> shipToList {get; set;}
 
-    public String customerAddressId {get; set;}
-
-    public String defaultShippingAddressId {get; set;}
     
-    private static final Boolean mock = False;
+    public String defaultShippingAddressId {get; set;}
+   
+    
+    
     
     
     
     public SavedShippingAddressesController() {
         super('CheckoutCommunityConfig');
-        this.client = new AuthorizeDotNetClient();
+        
+        
+        AuthorizeDotNetClient client = new AuthorizeDotNetClient();
      
-        this.customerProfileId = CurrentCustomer.getCustomerProfileId();
+        String customerProfileId = CurrentCustomer.getCustomerProfileId();
 
 
-        CustomerProfile theProfile = this.loadCustomerProfile();
+        CustomerProfile theProfile = CurrentCustomer.getCustomerProfile();
 
         if(theProfile == null) {
-            throw new CheckoutException('Customer profile must not be null');
+            throw new CheckoutException('GATEWAY_STATE_ERROR: No customer profile found in this context.');
         }
 
-        //method will send getCustomerProfileRequest to get list of shipping addresses 
-        //THEN it will iterate through the list calling getCustomerShippingAddressRequest(s) to find the default shipping address
-        //then it will construct the address collection
         AuthNetAddressCollection theCollection = theProfile.getShipToCollection();
-
+  
         //use collection's getDefault method to get the default
         AuthNetAddress theAddress = theCollection.getDefault();
-
-        System.debug(theAddress);
-        this.defaultShippingAddressId = theAddress.getCustomerAddressId();
+        this.defaultShippingAddressId = null == theAddress ? null : theAddress.getCustomerAddressId();
 
         this.shipToList = theCollection.getAsList();   
-
-        system.debug('default is '+ defaultShippingAddressId);
-
     }
 
-    public CustomerProfile loadCustomerProfile(){
-        GetCustomerProfileRequest req = new GetCustomerProfileRequest();
-        req.setCustomerProfileId(this.customerProfileId);
-        GetCustomerProfileResponse resp = (GetCustomerProfileResponse)client.send(req);
-        
-        return resp.success() ? resp.getProfile() : null;
-    }
+
     
 
     public PageReference setShippingMethod() {
         Map<String,String> params = ApexPages.currentPage().getParameters();
         String action = params.get('action');
         String customerAddressId = params.get('customerAddressId');
-      
-        System.debug('action = ' + action + ' id = '+ customerAddressId);
 
-        Pagereference ShippingMethodPage = new PageReference('/apex/ShippingMethod');
-        ShippingMethodPage.setRedirect(true);
-        ShippingMethodPage.getParameters().put('action', action);
-        if(customerAddressId!=null){
-            ShippingMethodPage.getParameters().put('customerAddressId', customerAddressId);
-    
-        }
 
-        return ShippingMethodPage;
+        Pagereference redirect = new PageReference('/ShippingMethod');
+        redirect.getParameters().putAll(params);
+        redirect.setRedirect(True);
+
+        return redirect;
     }
     
+    
+    // Used when the customer clickes "edit"
+    // for a given address.
     public PageReference editThisAddress() {
-        //when the user clicks edit link
-        //set the customerAddressId
         
         String customerAddressId = Apexpages.currentPage().getParameters().get('customerAddressId');
 
-        //able to set a parameter
-        if(customerAddressId!=null){
-            Pagereference page = new PageReference('/apex/ShippingMethod');
-            page.setRedirect(true);
-            page.getParameters().put('customerAddressId', customerAddressId);
-            page.getParameters().put('action', 'update');
-            system.debug(page.getParameters());
-            return page;
-        }
-        else {
-            return new PageReference('/apex/AddShippingAddress');
+        Boolean isEdit = customerAddressId != null;
+        
+        PageReference redirect = isEdit ? new PageReference('/ShippingMethod') : new PageReference('/AddShippingAddress');
 
+        if(isEdit) {
+            redirect.getParameters().put('customerAddressId', customerAddressId);
+            redirect.getParameters().put('action', 'edit');
+            redirect.setRedirect(True);
         }
+        
+        return redirect;
     }
+    
+    
 
     public PageReference deleteThisAddress() {
 
-        //delete directly
+        AuthorizeDotNetClient client = new AuthorizeDotNetClient();
+        
+
+        String customerProfileId = CurrentCustomer.getCustomerProfileId();
+        String customerAddressId = Apexpages.currentPage().getParameters().get('customerAddressId');
+
         DeleteCustomerShippingAddressRequest req = new DeleteCustomerShippingAddressRequest();
         req.setCustomerProfileId(customerProfileId);
-
-        customerAddressId = Apexpages.currentPage().getParameters().get('customerAddressId');
-
         req.setCustomerAddressId(customerAddressId);
-        String result = req.getBody();
 
-        Boolean isClientNull = client ==null;
-        if(isClientNull){
-            throw new CheckoutException('AuthorizeDotNetClient must not be null');
-        }
+
 
         AuthorizeDotNetResponse resp = (AuthorizeDotNetResponse)client.send(req);
+        Messages messages = resp.getMessages();
+        Message message = messages.getFirstMessage();
         
-        if(resp.success()){
-            System.debug(customerAddressId + ' has been deleted');
-            return new Pagereference(ApexPages.currentPage().getUrl()).setRedirect(true);
-
+        String errorText = 'API_ERROR: ' + message.getText();
+        
+        if(!resp.success()) {
+			ApexPages.addmessage(new ApexPages.message(ApexPages.Severity.WARNING, errorText));
         }
-        else{
-            Messages messages = resp.getMessages();
-            Message message = messages.getFirstMessage();
-            System.debug(message.getText());
-            ApexPages.addmessage(new ApexPages.message(ApexPages.severity.WARNING,'Unable to delete this address. ' + message.getText()));
-            return null;
-        }
-
-
+        
+        
+        return resp.success() ? new Pagereference(ApexPages.currentPage().getUrl()).setRedirect(True) : null;
     }
     
-    public PageReference redirectToShippingMethod() {
-        return new PageReference('/apex/ShippingMethod');
+    
+    
+    public PageReference doCreateShippingAddress() {
+        PageReference redirect = new PageReference('/ShippingMethod');
+        
+        Map<String,String> params = new Map<String,String>{'action' => 'new'};
+
+        redirect.getParameters().putAll(params);
+
+        return redirect;
     }
 
+    
+    
     public PageReference redirectToSavedShippingAddresses() {
-        return new Pagereference('/apex/SavedShippingAddresses');
+        return new Pagereference('/SavedShippingAddresses');
     }
 
 }

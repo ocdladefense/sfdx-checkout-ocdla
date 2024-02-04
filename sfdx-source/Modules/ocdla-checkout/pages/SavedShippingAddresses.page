@@ -1,5 +1,5 @@
 <apex:page controller="SavedShippingAddressesController" showHeader="false" standardStylesheets="true" docType="html-5.0" cache="false" applyHtmlTag="false" applyBodyTag="false">
-    
+      
     
     <apex:composition template="{!template}">
         
@@ -58,19 +58,23 @@
 
                     <apex:form id="ShipToForm">
 
-                        <apex:pageBlockSection title="Default Shipping Address" columns="1">
-                        	Default shipping address id is {!defaultShippingAddressId}
+                        <apex:outputPanel rendered="{!IF(shipToList.size == 0, True, False)}">
+                            <apex:pageBlockSection>
+                                <div>No saved shipping addresses available. Please add an address.</div>
+                            </apex:pageBlockSection>
+                        </apex:outputPanel>
+
+
+                        <apex:pageBlockSection title="New Shipping Address" columns="1">
+                            <apex:commandLink action="{!doCreateShippingAddress}" value="Add New Shipping Address" />
                         </apex:pageBlockSection>
 
 
-                        <apex:outputPanel rendered="{!IF(shipToList.size != 0, true, false)}">
-                            
-                            <apex:pageBlockSection title="New Shipping Address" columns="1">
-                                <apex:commandLink action="{!setShippingMethod}" value="Add New Shipping Address">
-                                    <apex:param name="action" value="new" />
-                                </apex:commandLink>
+                        <apex:outputPanel rendered="{!IF(shipToList.size > 0, True, False)}">
+                                
+                            <apex:pageBlockSection title="Default Shipping Address" columns="1">
+                                Default shipping address id is {!defaultShippingAddressId}
                             </apex:pageBlockSection>
-                            
                             
                             <apex:pageBlockSection title="Saved Addresses" columns="1">
                                 
@@ -89,9 +93,9 @@
                                             <!-- <span>{!shipTo.customerAddressId}</span> -->
 
 
-                                                    <apex:commandLink value="Edit" action="{!setShippingMethod}">
+                                                    <apex:commandLink value="Edit" action="{!editThisAddress}">
                                                         <apex:param name="customerAddressId" value="{!shipTo.customerAddressId}" />
-                                                        <apex:param name="action" value="update" />
+                                                        <apex:param name="action" value="edit" />
                                                     </apex:commandLink>
 
                                                 
@@ -110,13 +114,7 @@
                         </apex:outputPanel>
                         
                         
-                        <apex:outputPanel rendered="{!IF(shipToList.size == 0, true, false)}">
-                            <apex:pageBlockSection >
-                                
-                                <div>No saved shipping addresses available. Please add an address.</div>
-                                <apex:commandLink action="{!redirectToShippingMethod}" value="Add New Shipping Address" />
-                            </apex:pageBlockSection>
-                        </apex:outputPanel>
+
                         
                         
                         

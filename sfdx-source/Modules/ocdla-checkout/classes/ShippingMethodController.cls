@@ -110,10 +110,6 @@ public with sharing class ShippingMethodController extends CommunityController {
         
         CreateCustomerShippingAddressResponse resp = (CreateCustomerShippingAddressResponse)client.send(req);
 
-        if(resp.success()) {
-            system.debug('new address id is ' + resp.getCustomerAddressId());
-            
-        }
         
         return resp.success() ? new PageReference('/SavedShippingAddresses') : null;
     }
