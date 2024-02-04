@@ -1,0 +1,240 @@
+<apex:page controller="OcdlaCheckoutController" showHeader="false" standardStylesheets="false" docType="html-5.0" cache="false" applyHtmlTag="false" applyBodyTag="false">
+    
+      
+    <apex:composition template="{!template}">
+        
+        <apex:define name="title">
+            <title>OCDLA Checkout Payment</title> 
+        </apex:define>
+        
+        <apex:define name="styles">
+            
+            <link rel="stylesheet" type="text/css" href="https://{!cdn}/sites/default/modules/checkout/css/checkout.css?{!cacheKey}" />
+            <!-- let's override some of these styles -->
+            <style type="text/css">
+            
+            .panel-closed {
+                max-height: 100%;   
+                }
+            </style>
+        </apex:define>
+        
+        <apex:define name="scripts">
+        
+            <!---<script type="text/javascript" src="//{!cdn}/sites/default/modules/checkout/js/app.js">
+            </script>--->
+            
+            <script type="text/javascript">
+            function newCard() {
+                document.getElementById("card-data").setAttribute("style", "display:block");
+            }
+
+            function setBillingStateCode(event) {
+                console.log(event.target.value);
+            }
+
+            function setShippingStateCode(event) {
+                console.log(event.target.value);
+            }
+            </script>
+            
+            <apex:variable rendered="{!isTest}" var="foo" value="True">
+                <script type="text/javascript">
+                $(function(){
+                    loadProfile('testProfile');
+                    window.isTest = true;
+                });
+                
+                
+                </script>
+            </apex:variable>
+            
+        </apex:define>
+        
+         
+        
+        <!---<apex:define name="head-scripts">
+            <script type="text/javascript" src="//{!cdn}/sites/all/libraries/jquery-colorbox/jquery.colorbox-min.js">
+            </script>
+            <script type="text/javascript" src="https://{!cdn}/sites/default/modules/ccauthorize/js/app.settings.js?{!cacheKey}">
+            </script>
+            <script type="text/javascript" src="https://{!cdn}/sites/default/modules/ccauthorize/js/app.callouts.js?{!cacheKey}">
+            </script>
+            <script type="text/javascript" src="https://{!cdn}/sites/default/modules/ccauthorize/js/validate.js?{!cacheKey}">
+            </script>
+            <script type="text/javascript">
+            	var isFreeCart = {!isFreeCart};
+            </script>	
+        </apex:define>--->
+        
+        <apex:define name="body">
+            <style type="text/css">
+            .checkout-panel {
+                display:block;
+                width: auto;
+                }
+                
+                .select {
+    padding: 15px;
+    border: 1px solid #999;
+    margin-bottom: 8px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.content, .checkout-panel .content, .checkout-contact-panel .content {
+    padding: 0px;
+}
+                
+                .label {
+                font-family: Helvetica;
+                }
+                
+.order-total {
+    background-image: linear-gradient(351deg, #1e7d0c, #27be10);
+    display: inline-block;
+    padding: 10px;
+    border-radius: 4px;
+    color: #fff;
+}
+                
+                .column {
+                	padding: 25px;
+                }
+            </style>
+            <apex:pageMessages showDetail="True" id="myPageMessages" />
+            
+                <div id="checkout-app">
+                    
+                    <div class="column">
+                        <apex:form id="cc-payment">
+                            
+                            
+                            <div class="checkout-buy-panel">
+                                <div class="content">
+                                    
+                                    <!---
+                                    <apex:outputPanel layout="none" rendered="{!isTest}">
+                                        <div class="button">
+                                            <a href="#" onclick="loadProfile('testProfile');return false;">Load Test Data</a>
+                                        </div>
+                                    </apex:outputPanel> --->
+                                    <span class="order-total">Order Total: $<apex:outputText value="{!cartTotal}" /></span>
+
+                                
+                                    <apex:outputPanel rendered="{!isFreeCart}" layout="none">
+                                        <div id="free-text" style="display:none;">
+                                            Your Order is free and you will not be charged. Click "Complete Order" below to complete this Order.
+                                        </div>
+                                    </apex:outputPanel>
+                                
+                                </div> 
+                            </div>
+            
+    
+
+                            <div class="checkout-panel panel-closed checkout-payment-panel">
+                                <div class="content">  
+                                  
+
+                                    <apex:outputPanel layout="none" rendered="{!renderPayment}">
+                                            
+                                        <h2>
+                                            Payment Information
+                                        </h2>
+                                        <div class="select">
+                                            <span class="label">Paying with {!selectedPaymentProfile.cardType} {!selectedPaymentProfile.cardNumber}</span>
+                                            <br />
+                                            <a href="/SavedPaymentMethods">Manage</a>
+                                            <!--
+                                             <apex:selectList value="{!selectedPaymentProfileId}" size="1" label="Saved Cards:" onchange="newCard();">
+                                                <apex:selectOptions value="{!savedPaymentProfileOptions}" />
+                                            </apex:selectList>
+											-->
+                                        </div>
+                                        <div class="select">
+                                            <span class="label">Billing Address</span><br />
+                                            {!selectedPaymentProfile.billTo.firstName} {!selectedPaymentProfile.billTo.lastName}<br />
+                                            {!selectedPaymentProfile.billTo.address} {!selectedPaymentProfile.billTo.city}...
+                                        </div>
+                                    </apex:outputPanel>
+                                    
+                                    <apex:outputPanel rendered="{!!isFreeCart}" layout="none">
+                                        
+                                    </apex:outputPanel>
+                                </div>
+                            </div>
+                            
+                            
+                            <div class="checkout-panel panel-closed checkout-shipping-address-panel">  
+                                <div class="content">
+                                    <apex:outputPanel layout="none" rendered="{!hasShippableProducts}">
+                                        <h2>
+                                            Shipping Address  
+                                        </h2>
+                                       
+                                        <div class="select">
+                                        <span class="label">{!shipTo.firstName}, {!shipTo.lastName}</span><br />
+                                        {!shipTo.address}, {!shipTo.city}...
+                                            <br />
+                                            <a href="/SavedShippingAddresses">Manage Shipping</a>
+                                        </div>
+
+
+
+                                    </apex:outputPanel>
+                                </div>
+                                
+                            </div>
+                            
+                            
+
+                            
+                            
+
+                            <div class="checkout-buy-panel">
+                                <div class="content">
+                                    
+                                    <!---
+                                    <apex:outputPanel layout="none" rendered="{!isTest}">
+                                        <div class="button">
+                                            <a href="#" onclick="loadProfile('testProfile');return false;">Load Test Data</a>
+                                        </div>
+                                    </apex:outputPanel> --->
+                                    <span class="order-total">Order Total: $<apex:outputText value="{!cartTotal}" /></span>
+
+                                
+                                    <apex:outputPanel rendered="{!isFreeCart}" layout="none">
+                                        <div id="free-text" style="display:none;">
+                                            Your Order is free and you will not be charged. Click "Complete Order" below to complete this Order.
+                                        </div>
+                                    </apex:outputPanel>
+                                
+                                </div> 
+                            </div>
+
+                              
+                
+                            <div data-action="completeTransaction" class="button cc-data cc-button" onclick="doPreSubmitPayment(); return false;" id="ccSubmitPayment">
+                                Submit Payment $<apex:outputText value="{!cartTotal}" />
+                                <apex:actionFunction name="doPreSubmitPayment" action="{!preSubmitPayment}" oncomplete="doSubmitPayment();" onbeforedomupdate="return false;" />
+                                <apex:actionFunction name="doSubmitPayment" action="{!submitPayment}" />
+                            </div>
+                
+                            
+
+                            
+                        </apex:form>                        
+                        
+                    </div>
+                    
+                    
+                    
+
+                </div>
+            
+        </apex:define>
+        
+    </apex:composition>
+    
+    
+</apex:page>
