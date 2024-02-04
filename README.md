@@ -1,18 +1,22 @@
-# Salesforce DX Project: Next Steps
+# OCDLACheckout
+OCDLACheckout is an Org-dependent unlocked package implementing standard ecommerce checkout facilities for customers.   These facilities can be divided into a main controller for converting a Salesforce Opportunity object to an Order object; and related Apex classes and Visualforce pages for managing the customer's payment and shipping methods.
 
-Now that you’ve created a Salesforce DX project, what’s next? Here are some documentation resources to get you started.
+## About intern projects
 
-## How Do You Plan to Deploy Your Changes?
+## Authors
+OCDLA would like to thank our spring and fall '23 web development interns for their work on this project and work on the related Authorize.net API Apex SDK (on which this package depends).
 
-Do you want to deploy a set of changes, or create a self-contained application? Choose a [development model](https://developer.salesforce.com/tools/vscode/en/user-guide/development-models).
+### Spring '23 interns
 
-## Configure Your Salesforce DX Project
 
-The `sfdx-project.json` file contains useful configuration information for your project. See [Salesforce DX Project Configuration](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm) in the _Salesforce DX Developer Guide_ for details about this file.
+### Fall '23 interns
+* Mara Williams, LCC, [@maracw](https://github.com/maracw)
+* Steven Brady, LCC, [@bradysteven06](https://github.com/bradysteven06)
+* Alex Bedney, LCC, [@AlexBedney](https://github.com/AlexBedney)
 
-## Read All About It
 
-- [Salesforce Extensions Documentation](https://developer.salesforce.com/tools/vscode/)
-- [Salesforce CLI Setup Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_intro.htm)
-- [Salesforce DX Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_intro.htm)
-- [Salesforce CLI Command Reference](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/cli_reference.htm)
+## Dependencies
+
+## Installation
+
+## Screenshots
