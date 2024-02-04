@@ -1,14 +1,12 @@
 public class SavedPaymentMethodsController extends CommunityController {
     
-    private AuthorizeDotNetClient client;
+
 
     private String customerProfileId;
 
     public Contact c {get; set;}
 
     public AuthNetAddress billingInfo {get; set;}
-
-    public Payment paymentInfo {get; set;}
 
     public Boolean isDefaultPaymentMethod {get; set;}
 
@@ -18,33 +16,25 @@ public class SavedPaymentMethodsController extends CommunityController {
     
     private CustomerPaymentProfileCollection paymentProfileCollection;    
     
+    
+    
  
 
     public SavedPaymentMethodsController() {  
         super('CheckoutCommunityConfig');
+        
         billingInfo = new AuthNetAddress();
-        paymentInfo = new Payment();
-        Boolean useMock = False;
-        
-
-        client = new AuthorizeDotNetClient();
-        
         paymentProfiles = new List<CustomerPaymentProfile>();
-        // pretend that logged in users Authorize.net customer profile id is called.
-        customerProfileId = CurrentCustomer.getCustomerProfileId();
         
-
-        GetCustomerProfileRequest req = new GetCustomerProfileRequest();
-        req.setCustomerProfileId(customerProfileId);
-
-        GetCustomerProfileResponse resp = (GetCustomerProfileResponse)client.send(req);
-        this.customerProfile = resp.getProfile();
+        this.customerProfile = CurrentCustomer.getCustomerProfile();
         this.paymentProfiles = this.customerProfile.getPaymentProfiles();
         this.paymentProfileCollection = new CustomerPaymentProfileCollection(this.paymentProfiles);
     }
 
     
     public Pagereference setDefaultPaymentProfile() {
+        
+        AuthorizeDotNetClient client = new AuthorizeDotNetClient();
         
         Map<String,String> params = ApexPages.currentPage().getParameters();
         String paymentProfileId = params.get('paymentProfileId');
@@ -61,11 +51,17 @@ public class SavedPaymentMethodsController extends CommunityController {
         return null;
     }
     
+    
+    
     public List<CustomerPaymentProfile> getPaymentProfiles() {
         return this.paymentProfileCollection.getAsList();
     }
+    
+    
 
     public void deletePaymentProfile() {
+        AuthorizeDotNetClient client = new AuthorizeDotNetClient();
+        
         Map<String,String> params = ApexPages.currentPage().getParameters();
         String selectedPaymentProfileId = params.get('paymentProfileId');
 
@@ -77,17 +73,18 @@ public class SavedPaymentMethodsController extends CommunityController {
     }
 
     
+    
     public Pagereference redirectToPaymentMethod() {
         Map<String,String> params = ApexPages.currentPage().getParameters();
         String action = params.get('action');
         String selectedPaymentProfileId = params.get('paymentProfileId');
 
-        Pagereference PaymentMethodPage = new PageReference('/PaymentMethod');
-        PaymentMethodPage.setRedirect(true);
-        PaymentMethodPage.getParameters().put('action', action);
-        PaymentMethodPage.getParameters().put('paymentProfileId', selectedPaymentProfileId);
+        Pagereference redirect = new PageReference('/PaymentMethod');
+        redirect.setRedirect(True);
+        redirect.getParameters().put('action', action);
+        redirect.getParameters().put('paymentProfileId', selectedPaymentProfileId);
 
-        return PaymentMethodPage;
+        return redirect;
     }
     
 

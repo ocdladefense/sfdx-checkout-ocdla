@@ -50,4 +50,19 @@ public class CurrentCustomer {
         
         return null != u.LinkedCustomerUser__c ? getCustomerId(u.LinkedCustomerUser__c) : u.ContactId;
 	}
+    
+    
+    public static CustomerProfile getCustomerProfile() {
+        
+        String customerProfileId = CurrentCustomer.getCustomerProfileId();
+        
+        AuthorizeDotNetClient client = new AuthorizeDotNetClient();
+
+        GetCustomerProfileRequest req = new GetCustomerProfileRequest();
+        req.setCustomerProfileId(customerProfileId);
+
+        GetCustomerProfileResponse resp = (GetCustomerProfileResponse)client.send(req);
+        
+        return resp.success() ? resp.getProfile() : null;
+    }
 }
