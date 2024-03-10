@@ -8,6 +8,25 @@ public class CurrentCustomer {
     public static void setCustomerProfileId(String profileId) {
         customerProfileId = profileId;
     }
+    
+    
+    public static Contact getLoggedInUserData(String customerId) {
+        // will return the contact object of the logged in user, see checkOrderEmail return below
+        // because it's a static function we can't use class variables like billToContact
+        // UserInfo may be tied to the class and possibly not usable in static functions
+        // we will have another function to get the saved CCs after getting the logged in user
+        Contact c = [SELECT FirstName, LastName, Email, MailingStreet, MailingPostalCode, MailingCity, Ocdla_Address_Line_1__c, 
+                          Ocdla_Address_Line_2__c, MailingStateCode, AccountId, Account.Name FROM Contact WHERE Id = :customerId];
+        
+        // could probably add a check here to make sure the contact isn't empty or something
+        
+        return c;
+    }
+    
+    public static Contact getCustomerContact() {
+     	   
+        return getLoggedInUserData(getCustomerId());
+    }
         
     
     /**
@@ -51,11 +70,21 @@ public class CurrentCustomer {
         return null != u.LinkedCustomerUser__c ? getCustomerId(u.LinkedCustomerUser__c) : u.ContactId;
 	}
     
+    private static Id getCustomerId() {
+        
+        return getCustomerId(UserInfo.getUserId());
+    }
     
+
     public static CustomerProfile getCustomerProfile() {
+        String customerProfileId = CurrentCustomer.getCustomerProfileId();   
         
-        String customerProfileId = CurrentCustomer.getCustomerProfileId();
-        
+        return getCustomerProfile(customerProfileId);
+    }
+    
+    
+    public static CustomerProfile getCustomerProfile(String customerProfileId) {
+ 
         AuthorizeDotNetClient client = new AuthorizeDotNetClient();
 
         GetCustomerProfileRequest req = new GetCustomerProfileRequest();

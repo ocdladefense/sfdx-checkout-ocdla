@@ -1,29 +1,54 @@
 global without sharing class OcdlaCheckoutController extends CommunityController {
 	
+    
+    public String cartId {get; private set;}
+    
+    
+    // The loaded Shopping cart for this customer.
+    private Opportunity cart {get; set;}
+
+    
+    
+    // Pre-defined guest checkout id.
     public static Id GUEST_CHECKOUT_ACCOUNT_ID;
 
+    
+    // The current customer for this Shopping cart.
     public Contact customer {get; private set;}
     
-    Opportunity opp {get; private set;}
     
+    // Order would be produced on successful transaction.
+    // Otherwise we would ideally rollback so that the Order is
+    // actually not persisted.
     Order order {get; private set;}
 
-
-      
-
-      
+	
+    // Whether the current user is a logged in customer.
+    // If not then this is the Guest user.
     public Boolean isLoggedIn {get; private set;}
     
+    
+    // A summary of this Shopping cart's items.
     public String shoppingCartSummary {get;private set;}
     
-    public String cartId {get; public set;}
-    
+
+    // If the Amount of the Opportunity is $0.00 then it is considered free.
     public Boolean isFreeCart {get;private set;}
     
-    public Boolean hasShippableProducts {get {return hasShippableProducts(this.cartId);}private set;}
     
+    // Boolean indicating whether the Shopping cart contains
+    // any shippable products.
+    public Boolean hasShippableProducts {get {return hasShippableProducts(this.cartId);}private set;}
+
+    
+    // Whether to show payment-related options at checkout.
+    // For example, if the Shopping cart contains $0.00 worth of items there 
+    // is no need to show payment options, as no payment is required.
     public Boolean renderPayment {get;private set;}
 
+    
+    // Whether this Shopping cart has already been paid of.
+    // This can be indicated by the Opportunity Status field value of 'Closed Won'.
     public Boolean isPaid {get;private set;} 
   
 
@@ -51,7 +76,9 @@ global without sharing class OcdlaCheckoutController extends CommunityController
 
     
     
-    
+    public Boolean getHasDefaultPaymentProfile() {
+        return True;
+    }
     
     
     
@@ -64,35 +91,43 @@ global without sharing class OcdlaCheckoutController extends CommunityController
         super('CheckoutCommunityConfig');
 
 		Map<String,String> params = ApexPages.CurrentPage().getParameters();
-		Id cartId = params.get('id') != null ? params.get('id') : '0060500000CtPBoAAN';
-
-        try {
-        	this.opp = [SELECT Id, Name, Amount, StageName, AccountId, Contact__c, Pricebook2Id FROM Opportunity WHERE Id = :this.cartId];
-        } catch(System.SObjectException e) {
-            // ApexPages.
+		this.cartId = params.get('id');
+        
+        if(null == cartId) {
+            throw new CheckoutException('CHECKOUT_INIT_ERROR: No valid cartId provided (NULL).');
         }
-        
 
         
-        String customerProfileId = '916376196';
-		this.customerProfile = getCustomerProfile(customerProfileId);
-
-
+        this.cart = [SELECT Id, Name, Amount, StageName, AccountId, Contact__c, Pricebook2Id FROM Opportunity WHERE Id = :this.cartId];
         
+
+        // Pulled from Authorize dot net 3/9/2024.
+        String customerProfileId = '905372692';
         
+        this.customer = CurrentCustomer.getCustomerContact();
+        
+		this.customerProfile = CurrentCustomer.getCustomerProfile('905372692');
+
         // Why do we need to check if Sandbox.  Could be legit, but let's find out the *why!
         // this.isSandbox = isSandbox();
 
-        
-        this.isPaid = this.opp.StageName == 'Closed Won';
-        
-        this.isFreeCart = !(this.opp.Amount > 0.00);
-        
         this.hasShippableProducts = False;
         
-        this.renderPayment = !this.isPaid ? True : False;
+        this.isPaid = this.cart.StageName == 'Closed Won';
+        
+        this.isFreeCart = !(this.cart.Amount > 0.00);
+                
+        // No need to render payment inputs if the Order was already placed,
+        // or if no payment is required.
+        this.renderPayment = !this.isPaid && !this.isFreeCart;
     }
 
+    
+	// Should also determine if the current User has access rights.
+    public Boolean getShowPaymentGatewayOptions() {
+
+        return isSandbox(); // && isAdmin();
+    }
 
     
     public List<CustomerPaymentProfile> getPaymentProfiles() {
@@ -115,44 +150,50 @@ global without sharing class OcdlaCheckoutController extends CommunityController
     
     
     
-    public List<AuthNetAddress> getShippingAddresses() {
-		AuthNetAddressCollection shipToList = new AuthNetAddressCollection(this.customerProfile.getShipToList()); 
-        
-        if(shipToList.size() > 0) {
-            this.shipTo = shipToList.getDefault();
-        } else {
-            throw new CheckoutException('No shipping profiles found.');
-        }
-        
-        return null;
-    }
-    
-    
-    
-    public static CustomerProfile getCustomerProfile(String customerProfileId) {
-        
-        AuthorizeDotNetClient client = new AuthorizeDotNetClient();
-        
-        GetCustomerProfileRequest req = new GetCustomerProfileRequest();
-        req.setCustomerProfileId(customerProfileId);
 
-        GetCustomerProfileResponse resp = (GetCustomerProfileResponse)client.send(req);
+    
+   
+    public String formatAddress(AuthNetAddress addy) {
         
-        return resp.getProfile();
-    }    
+        String format = '{0} {1}<br />{2} {3}';
+        
+	
+        
+        List<String> parts = new List<String>();
+        parts.add(addy.firstName);
+        parts.add(addy.lastName);
+        parts.add(addy.address);
+        parts.add(addy.city);
+        
+        return String.format(format,parts);
+    }
     
     
+    public String getDefaultPaymentProfileBillingAddressFormatted() {
+        
+        String addy = formatAddress(getDefaultExampleAddress());
+        System.debug(addy);
+        
+        return addy;
+    }
     
-    public AuthNetAddress getDefaultBillingAddress() {
+    
+    public String getDefaultShippingAddressFormatted() {
+        
+        String addy = formatAddress(getDefaultExampleAddress());
+        System.debug(addy);
+        
+        return addy;
+    }
+    
+    
+    public AuthNetAddress getDefaultExampleAddress() {
         
         return new AuthNetAddress(customer.FirstName, customer.LastName, '123 Monroe Ave.', 'Corvallis', 'OR', '97443');
     }
     
-    public AuthNetAddress getDefaultShippingAddress() {
-        
-        return new AuthNetAddress(customer.FirstName, customer.LastName, '123 Monroe Ave.', 'Corvallis', 'OR', '97443');
-    }
-      
+
+    
     public List<SelectOption> getSavedPaymentProfileOptions() {
 
 		System.debug(this.paymentProfiles);
@@ -174,14 +215,6 @@ global without sharing class OcdlaCheckoutController extends CommunityController
 }
     
     
-    
-    public Boolean getRenderPayment(){
-        return this.renderPayment;
-    }
-    
-    public Boolean getIsPaid(){
-        return this.IsPaid;
-    }
 
     
     
@@ -252,38 +285,24 @@ global without sharing class OcdlaCheckoutController extends CommunityController
     }
     
         
-    public String getCartName(){
-        return this.opp.Name;
+    public String getCartName() {
+        return this.cart.Name;
     }
     
-    public String getCartSummary(){
-        return this.shoppingCartSummary;
+    
+    public String getCartTotal() {
+        return String.valueOf(this.cart.Amount);
     }
     
-    public String getCartTotal(){
-        return String.valueOf(this.opp.Amount);
-    }
     
-    public String getOrderEmail(){
+    public String getOrderEmail() {
         Boolean isGuestAccount = False;
         String email = this.customer.Email;
         
         return email;
     }
 
-    
-    public Contact getLoggedInUserData(string customerId) {
-        // will return the contact object of the logged in user, see checkOrderEmail return below
-        // because it's a static function we can't use class variables like billToContact
-        // UserInfo may be tied to the class and possibly not usable in static functions
-        // we will have another function to get the saved CCs after getting the logged in user
-        Contact c = [SELECT FirstName, LastName, Email, MailingStreet, MailingPostalCode, MailingCity, Ocdla_Address_Line_1__c, 
-                          Ocdla_Address_Line_2__c, MailingStateCode, AccountId, Account.Name FROM Contact WHERE Id = :customerId];
-        
-        // could probably add a check here to make sure the contact isn't empty or something
-        
-        return c;
-    }
+
     
     public void preSubmitPayment() {
         System.debug('yoyoyoyo');

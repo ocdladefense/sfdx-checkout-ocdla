@@ -108,25 +108,23 @@
                     <div class="column">
                         <apex:form id="cc-payment">
                             
+
                             
                             <div class="checkout-buy-panel">
                                 <div class="content">
-                                    
-                                    <!---
-                                    <apex:outputPanel layout="none" rendered="{!isTest}">
-                                        <div class="button">
-                                            <a href="#" onclick="loadProfile('testProfile');return false;">Load Test Data</a>
-                                        </div>
-                                    </apex:outputPanel> --->
+
                                     <span class="order-total">Order Total: $<apex:outputText value="{!cartTotal}" /></span>
 
-                                
                                     <apex:outputPanel rendered="{!isFreeCart}" layout="none">
                                         <div id="free-text" style="display:none;">
                                             Your Order is free and you will not be charged. Click "Complete Order" below to complete this Order.
                                         </div>
                                     </apex:outputPanel>
-                                
+                                        
+                                    <apex:selectRadio label="Payment Gateway" value="{!gatewayName}" rendered="{!showPaymentGatewayOptions}">
+                                        <apex:selectOption itemLabel="Sandbox" itemValue="sandbox" />
+                                        <apex:selectOption itemLabel="Production" itemValue="production" />                            
+                                    </apex:selectRadio>
                                 </div> 
                             </div>
             
@@ -142,7 +140,7 @@
                                             Payment Information
                                         </h2>
                                         <div class="select">
-                                            <span class="label">Paying with {!selectedPaymentProfile.cardType} {!selectedPaymentProfile.cardNumber}</span>
+                                            <apex:outputText styleClass="label" rendered="{!hasDefaultPaymentProfile}">Paying with {!selectedPaymentProfile.cardType} {!selectedPaymentProfile.cardNumber}</apex:outputText>
                                             <br />
                                             <a href="/SavedPaymentMethods">Manage</a>
                                             <!--
@@ -153,8 +151,7 @@
                                         </div>
                                         <div class="select">
                                             <span class="label">Billing Address</span><br />
-                                            {!selectedPaymentProfile.billTo.firstName} {!selectedPaymentProfile.billTo.lastName}<br />
-                                            {!selectedPaymentProfile.billTo.address} {!selectedPaymentProfile.billTo.city}...
+                                            <apex:outputText escape="False" value="{!defaultPaymentProfileBillingAddressFormatted}" />
                                         </div>
                                     </apex:outputPanel>
                                     
@@ -173,10 +170,10 @@
                                         </h2>
                                        
                                         <div class="select">
-                                        <span class="label">{!shipTo.firstName}, {!shipTo.lastName}</span><br />
-                                        {!shipTo.address}, {!shipTo.city}...
-                                            <br />
-                                            <a href="/SavedShippingAddresses">Manage Shipping</a>
+                                            <span class="label">
+                                                <apex:outputText escape="False" value="{!defaultPaymentProfileBillingAddressFormatted}" />...
+                                                <a href="/SavedShippingAddresses">Manage Shipping</a>
+                                            </span>
                                         </div>
 
 
