@@ -8,11 +8,6 @@ global without sharing class OcdlaCheckoutController extends CommunityController
     private Opportunity cart {get; set;}
 
     
-    
-    // Pre-defined guest checkout id.
-    public static Id GUEST_CHECKOUT_ACCOUNT_ID;
-
-    
     // The current customer for this Shopping cart.
     public Contact customer {get; private set;}
     
@@ -57,8 +52,6 @@ global without sharing class OcdlaCheckoutController extends CommunityController
     // Instead the customer uses the related SelectOption (or otherwise manages them through a separate controller).
 	private CustomerPaymentProfileCollection paymentProfiles;
     
-    public List<SelectOption> savedPaymentProfileOptions {get; private set;}
-    
     public String selectedPaymentProfileId {get;public set;}
     
     public CustomerPaymentProfile selectedPaymentProfile {get; public set;}
@@ -72,14 +65,7 @@ global without sharing class OcdlaCheckoutController extends CommunityController
     
     
 
-        
 
-    
-    
-    public Boolean getHasDefaultPaymentProfile() {
-        return True;
-    }
-    
     
     
     /**
@@ -107,9 +93,10 @@ global without sharing class OcdlaCheckoutController extends CommunityController
         this.customer = CurrentCustomer.getCustomerContact();
         
 		this.customerProfile = CurrentCustomer.getCustomerProfile('905372692');
-
+		System.debug(this.customerProfile);
+        System.debug(this.customerProfile.getPaymentProfiles());
         // Why do we need to check if Sandbox.  Could be legit, but let's find out the *why!
-        // this.isSandbox = isSandbox();
+        // this.isSandbox = CurrentCustomer.isSandbox();
 
         this.hasShippableProducts = False;
         
@@ -123,77 +110,7 @@ global without sharing class OcdlaCheckoutController extends CommunityController
     }
 
     
-	// Should also determine if the current User has access rights.
-    public Boolean getShowPaymentGatewayOptions() {
 
-        return isSandbox(); // && isAdmin();
-    }
-
-    
-    public List<CustomerPaymentProfile> getPaymentProfiles() {
-        
-        // System.debug('PAYMENTS:');
-        this.paymentProfiles = new CustomerPaymentProfileCollection(this.customerProfile.getPaymentProfiles());
-
-  
-        
-		this.savedPaymentProfileOptions = this.getSavedPaymentProfileOptions();
-        
-        if(this.paymentProfiles.size() > 0) {
-            this.selectedPaymentProfile = this.paymentProfiles.getDefault();
-        } else {
-            throw new CheckoutException('No payment profiles found for.');
-        }
-
-		return null;
-    }
-    
-    
-    
-
-    
-   
-    public String formatAddress(AuthNetAddress addy) {
-        
-        String format = '{0} {1}<br />{2} {3}';
-        
-	
-        
-        List<String> parts = new List<String>();
-        parts.add(addy.firstName);
-        parts.add(addy.lastName);
-        parts.add(addy.address);
-        parts.add(addy.city);
-        
-        return String.format(format,parts);
-    }
-    
-    
-    public String getDefaultPaymentProfileBillingAddressFormatted() {
-        
-        String addy = formatAddress(getDefaultExampleAddress());
-        System.debug(addy);
-        
-        return addy;
-    }
-    
-    
-    public String getDefaultShippingAddressFormatted() {
-        
-        String addy = formatAddress(getDefaultExampleAddress());
-        System.debug(addy);
-        
-        return addy;
-    }
-    
-    
-    public AuthNetAddress getDefaultExampleAddress() {
-        
-        return new AuthNetAddress(customer.FirstName, customer.LastName, '123 Monroe Ave.', 'Corvallis', 'OR', '97443');
-    }
-    
-
-    
     public List<SelectOption> getSavedPaymentProfileOptions() {
 
 		System.debug(this.paymentProfiles);
@@ -201,7 +118,7 @@ global without sharing class OcdlaCheckoutController extends CommunityController
 		List<SelectOption> options = new List<SelectOption>();
 
         
-        List<CustomerPaymentProfile> profiles = this.paymentProfiles.getAsList();
+        List<CustomerPaymentProfile> profiles = this.customerProfile.paymentProfiles;
         
         for(CustomerPaymentProfile profile : profiles) {
             SelectOption option = profile.toSelectOption();
@@ -212,7 +129,39 @@ global without sharing class OcdlaCheckoutController extends CommunityController
 		options.add(new SelectOption('',' New Card'));
    
 		return options;
-}
+	}
+
+    
+
+    
+    
+    
+
+    
+   
+
+    
+    
+    public String getDefaultPaymentProfileBillingAddressFormatted() {
+        
+        String addy = CurrentCustomer.formatAddress(new AuthNetAddress(customer.FirstName, customer.LastName, '123 Monroe Ave.', 'Corvallis', 'OR', '97443'));
+        System.debug(addy);
+        
+        return addy;
+    }
+    
+    
+    public String getDefaultShippingAddressFormatted() {
+        
+        String addy = CurrentCustomer.formatAddress(new AuthNetAddress(customer.FirstName, customer.LastName, '123 Monroe Ave.', 'Corvallis', 'OR', '97443'));
+        System.debug(addy);
+        
+        return addy;
+    }
+    
+
+    
+
     
     
 
@@ -237,7 +186,7 @@ global without sharing class OcdlaCheckoutController extends CommunityController
         
         // Creates guest contact, attaches to opportunity, inserts contact, then updates opportunity all in one go
         // customer = ClickpdxCheckoutGuestController.generateGuestCheckoutContact(customer, this.cartId);
-        this.customer.AccountId = getGuestCheckoutAccountId();
+        this.customer.AccountId = CurrentCustomer.getGuestCheckoutAccountId();
         upsert this.customer;
         
         // Guest customer now has an Id, which we want to associate with the underlying Opportunity.
@@ -249,25 +198,6 @@ global without sharing class OcdlaCheckoutController extends CommunityController
         nextPage.setRedirect(False);
         return nextPage;
     }
-
-    
-   
-    
-    /*
-    private List<SelectOption> getStateOptions() {
-        return States.getAsSelectOptions();
-    }
-*/
-
-    
-
-    
-    
-
-
- 
-    
-    
 
 
     public PageReference redirectIfSobjectError(){
@@ -296,10 +226,8 @@ global without sharing class OcdlaCheckoutController extends CommunityController
     
     
     public String getOrderEmail() {
-        Boolean isGuestAccount = False;
-        String email = this.customer.Email;
-        
-        return email;
+
+        return this.customer.Email;
     }
 
 
@@ -422,7 +350,7 @@ global without sharing class OcdlaCheckoutController extends CommunityController
         
         
         
-        Contact guest = new Contact(AccountId = getGuestCheckoutAccountId(), 
+        Contact guest = new Contact(AccountId = CurrentCustomer.getGuestCheckoutAccountId(), 
                                     FirstName = c.FirstName,
                                     LastName = c.LastName,
                                     Email = c.Email,
@@ -448,17 +376,31 @@ global without sharing class OcdlaCheckoutController extends CommunityController
 
     
     
-    private static Id getGuestCheckoutAccountId(){
-        if(null != GUEST_CHECKOUT_ACCOUNT_ID) return GUEST_CHECKOUT_ACCOUNT_ID;
-        Account a = [SELECT Id, Name FROM Account WHERE NAME LIKE '%Guest Checkout%' LIMIT 1];
-        GUEST_CHECKOUT_ACCOUNT_ID = a.Id;
-        return GUEST_CHECKOUT_ACCOUNT_ID;
+	// Should also determine if the current User has access rights.
+    public Boolean getShowPaymentGatewayOptions() {
+
+        return CurrentCustomer.isSandbox(); // && isAdmin();
     }
   
-    private static Boolean isSandbox(){
-        Organization myOrg = [SELECT Id, IsSandbox FROM Organization WHERE Id = :UserInfo.getOrganizationId()];
+    public String getSelectedPaymentMethodText() {
         
-        return myOrg.IsSandbox;
+        CustomerPaymentProfile first = this.getFirst();
+        
+		return first.cardType + ' ' + first.cardNumber;
+    }
+
+    
+    
+    public Boolean getHasDefaultPaymentProfile() {
+        return True;
+    }
+    
+    
+    public CustomerPaymentProfile getFirst() {
+        
+        List<CustomerPaymentProfile> saved = this.customerProfile.getPaymentProfiles();
+        
+        return null != saved && saved.size() < 1 ? null : saved[0];
     }
 	
 }

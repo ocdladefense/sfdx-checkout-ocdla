@@ -140,7 +140,7 @@
                                             Payment Information
                                         </h2>
                                         <div class="select">
-                                            <apex:outputText styleClass="label" rendered="{!hasDefaultPaymentProfile}">Paying with {!selectedPaymentProfile.cardType} {!selectedPaymentProfile.cardNumber}</apex:outputText>
+                                            <apex:outputText styleClass="label" rendered="{!hasDefaultPaymentProfile}">Paying with {!selectedPaymentMethodText}</apex:outputText>
                                             <br />
                                             <a href="/SavedPaymentMethods">Manage</a>
                                             <!--
@@ -190,13 +190,7 @@
 
                             <div class="checkout-buy-panel">
                                 <div class="content">
-                                    
-                                    <!---
-                                    <apex:outputPanel layout="none" rendered="{!isTest}">
-                                        <div class="button">
-                                            <a href="#" onclick="loadProfile('testProfile');return false;">Load Test Data</a>
-                                        </div>
-                                    </apex:outputPanel> --->
+
                                     <span class="order-total">Order Total: $<apex:outputText value="{!cartTotal}" /></span>
 
                                 
@@ -213,8 +207,9 @@
                 
                             <div data-action="completeTransaction" class="button cc-data cc-button" onclick="doPreSubmitPayment(); return false;" id="ccSubmitPayment">
                                 Submit Payment $<apex:outputText value="{!cartTotal}" />
-                                <apex:actionFunction name="doPreSubmitPayment" action="{!preSubmitPayment}" oncomplete="doSubmitPayment();" onbeforedomupdate="return false;" />
-                                <apex:actionFunction name="doSubmitPayment" action="{!submitPayment}" />
+								<apex:actionFunction name="doPreSubmitPayment" action="{!preSubmitPayment}" onbeforedomupdate="return false;" />
+                                <!-- <apex:actionFunction name="doPreSubmitPayment" action="{!preSubmitPayment}" oncomplete="doSubmitPayment();" onbeforedomupdate="return false;" /> -->
+                                <!-- <apex:actionFunction name="doSubmitPayment" action="{!submitPayment}" /> -->
                             </div>
                 
                             

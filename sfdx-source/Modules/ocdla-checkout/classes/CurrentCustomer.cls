@@ -2,12 +2,45 @@ public class CurrentCustomer {
 
     private static String customerProfileId;
     
-    
+    private static Id GUEST_CHECKOUT_ACCOUNT_ID;
     
     
     public static void setCustomerProfileId(String profileId) {
         customerProfileId = profileId;
     }
+    
+    
+    public static Id getGuestCheckoutAccountId() {
+        if(null != GUEST_CHECKOUT_ACCOUNT_ID) return GUEST_CHECKOUT_ACCOUNT_ID;
+        Account a = [SELECT Id, Name FROM Account WHERE NAME LIKE '%Guest Checkout%' LIMIT 1];
+        GUEST_CHECKOUT_ACCOUNT_ID = a.Id;
+        
+        return GUEST_CHECKOUT_ACCOUNT_ID;
+    }
+    
+    
+    public static Boolean isSandbox(){
+        Organization myOrg = [SELECT Id, IsSandbox FROM Organization WHERE Id = :UserInfo.getOrganizationId()];
+        
+        return myOrg.IsSandbox;
+    }
+    
+    
+    public static String formatAddress(AuthNetAddress addy) {
+        
+        String format = '{0} {1}<br />{2} {3}';
+        
+	
+        
+        List<String> parts = new List<String>();
+        parts.add(addy.firstName);
+        parts.add(addy.lastName);
+        parts.add(addy.address);
+        parts.add(addy.city);
+        
+        return String.format(format,parts);
+    }
+    
     
     
     public static Contact getLoggedInUserData(String customerId) {
@@ -80,6 +113,23 @@ public class CurrentCustomer {
         String customerProfileId = CurrentCustomer.getCustomerProfileId();   
         
         return getCustomerProfile(customerProfileId);
+    }
+    
+    
+    public List<CustomerPaymentProfile> getPaymentProfiles() {
+        /*
+        // System.debug('PAYMENTS:');
+        CustomerPaymentProfileCollection paymentProfiles = new CustomerPaymentProfileCollection(this.customerProfile.getPaymentProfiles());
+
+
+        
+        if(paymentProfiles.size() > 0) {
+        	PaymentProfile selectedPaymentProfile = this.paymentProfiles.getDefault();
+        } else {
+            throw new CheckoutException('No payment profiles found for.');
+        }
+	*/
+		return null;
     }
     
     
