@@ -6,7 +6,7 @@
       "path": "sfdx-source/Modules/ocdla-checkout",
       "package": "OCDLACheckout",
       "versionName": "Winter '24",
-      "versionNumber": "0.2.10.NEXT",
+      "versionNumber": "0.2.11.NEXT",
       "default": false,
       "versionDescription": "Controllers and Views for OCDLA Checkout.",
       "dependencies": []
@@ -34,6 +34,8 @@
     "OCDLACheckout@0.1.0-10": "04tVJ0000000fcfYAA",
     "OCDLACheckout@0.1.0-11": "04tVJ0000000iVhYAI",
     "OCDLACheckout@0.1.1-1": "04tVJ0000000iXJYAY",
-    "OCDLACheckout@0.2.10-1": "04tVJ0000000nNJYAY"
+    "OCDLACheckout@0.2.10-1": "04tVJ0000000nNJYAY",
+    "OCDLACheckout@0.2.10-2": "04tVJ000000208nYAA",
+    "OCDLACheckout@0.2.11-1": "04tVJ00000020APYAY"
   }
 }
