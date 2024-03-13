@@ -1,12 +1,13 @@
 # OCDLA Checkout
-OCDLA Checkout is an Org-dependent unlocked package implementing standard ecommerce checkout facilities for customers.   These facilities can be divided into a main controller for converting a Salesforce Opportunity object to an Order object; and related Apex classes and Visualforce pages for managing the customer's payment and shipping methods.
+OCDLA Checkout is an Org-dependent Salesforce unlocked package implementing standard ecommerce checkout facilities for customers.   These facilities can be divided into a main controller for converting a Salesforce Opportunity object to an Order object; and related Apex classes and Visualforce pages for managing the customer's payment and shipping methods.
 
 ## Installation Notes
 
 ### Conflicting package: Communities
-These classes were either required as dependencies or had name conflicts names with existing classes.  They were temporarily removed from the installed Communities package and included as part of this OCDLACheckout package.
+These classes were either required as dependencies or had naming conflicts names with existing classes.  They were temporarily removed from the installed Communities package and included as part of this OCDLACheckout package.
 * PaymentMethodController.cls
 * CommunityController.cls
+* CommunityTemplateController.cls
 
 
 ## Relevant links
@@ -31,7 +32,7 @@ OCDLA would like to thank our spring and fall '23 web development interns for th
 
 
 ## Dependencies
-This package depends on ocdladefense/AuthorizeDotNetApi.  
+This package depends on the Salesforce [@ocdladefense/AuthorizeDotNet](https://github.com/ocdladefense/sfdx-ecommerce/tree/development).
 
 ## Screenshots
 
