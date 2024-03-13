@@ -19,7 +19,7 @@ These classes were either required as dependencies or had naming conflicts names
 
 
 ## Authors
-OCDLA would like to thank our spring and fall '23 web development interns for their work on this project.  Fall '23 interns also worked on the related Authorize.net API Apex SDK (on which this package depends).
+OCDLA would like to thank our spring and fall '23 web development interns for their work on this project.  Fall '23 interns also worked on the related [Authorize.net API Apex SDK](https://github.com/ocdladefense/sfdx-ecommerce/tree/development) (on which this package depends).
 
 ### Spring '23 interns
 * Zaelin Bull, LCC
@@ -37,6 +37,8 @@ This package depends on the Salesforce [@ocdladefense/AuthorizeDotNet](https://g
 ## Screenshots
 
 ## Version History
+### 0.2.12-NEXT
+The next minor version of should continue progress on the checkout page and the <code>preSubmitPayment()</code> method.  Use DML to create an Order from the Opportunity Object.  Insert the Order object.  Set the Order object to Active.
 ### 0.2.11
 Consolidate customer and profile functions into the <code>CurrentCustomer</code> and <code>CustomerProfile</code> classes.  The checkout page should display details of the customer's shopping cart and enough payment details to process a transaction and resulting Order for the cart.
 * Simplify checkout page and related controller.
