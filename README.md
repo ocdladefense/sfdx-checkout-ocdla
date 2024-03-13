@@ -32,9 +32,7 @@ OCDLA would like to thank our spring and fall '23 web development interns for th
 
 
 ## Dependencies
-This package depends on the Salesforce [@ocdladefense/AuthorizeDotNet](https://github.com/ocdladefense/sfdx-ecommerce/tree/development).
-
-## Screenshots
+This package depends on the Salesforce [@ocdladefense/AuthorizeDotNet](https://github.com/ocdladefense/sfdx-ecommerce/tree/development) unlocked package to process Transactions against the Authorize.net payment gateway.
 
 ## Version History
 ### 0.2.12-NEXT
