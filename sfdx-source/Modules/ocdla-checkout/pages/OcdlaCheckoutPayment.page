@@ -203,13 +203,13 @@
                                 </div> 
                             </div>
 
-                              
+                                
                 
-                            <div data-action="completeTransaction" reRender="myPageMessages" class="button cc-data cc-button" onclick="doPreSubmitPayment(); return false;" id="ccSubmitPayment">
+                            <div data-action="completeTransaction" reRender="myPageMessages" class="button cc-data cc-button" onclick="doSubmitPayment(); return false;" id="ccSubmitPayment">
                                 Submit Payment $<apex:outputText value="{!cartTotal}" />
-								<apex:actionFunction name="doPreSubmitPayment" action="{!preSubmitPayment}" onbeforedomupdate="return false;" />
-                                <!-- <apex:actionFunction name="doPreSubmitPayment" action="{!preSubmitPayment}" oncomplete="doSubmitPayment();" onbeforedomupdate="return false;" /> -->
-                                <!-- <apex:actionFunction name="doSubmitPayment" action="{!submitPayment}" /> -->
+
+                                <!--- <apex:actionFunction name="doPreSubmitPayment" action="{!preSubmitPayment}" oncomplete="doSubmitPayment();" onbeforedomupdate="return false;" /> --->
+                                <apex:actionFunction name="doSubmitPayment" action="{!submitPayment}" />
                             </div>
                 
                             

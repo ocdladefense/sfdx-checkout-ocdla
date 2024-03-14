@@ -232,7 +232,7 @@ global without sharing class OcdlaCheckoutController extends CommunityController
 
 
     
-    public PageReference preSubmitPayment() {
+    public PageReference submitPayment() {
 
         Boolean processedPayment = True;
         Boolean hasErrors = False;

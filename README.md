@@ -36,7 +36,10 @@ This package depends on the Salesforce [@ocdladefense/AuthorizeDotNet](https://g
 
 ## Version History
 ### 0.2.12-NEXT
-The next minor version should continue progress on the checkout page and the <code>preSubmitPayment()</code> method.  Use DML to create an Order from the Opportunity Object.  Insert the Order object.  Set the Order object to Active.
+The next minor version should continue progress on the checkout page and the <code>submitPayment()</code> method.  Use DML to create an Order from the Opportunity Object.  Insert the Order object.  Set the Order object to Active. The following classes will be updated:
+* OcdlaCheckoutController.cls - Outline a complete Transaction flow in <code>submitPayment()</code>.
+* OrderConfirmationController.cls
+* ClickpdxOrder.cls - Updated to make the returned Order SObject compatible with <code>upsert</code> operation.
 ### 0.2.11
 Consolidate customer and profile functions into the <code>CurrentCustomer</code> and <code>CustomerProfile</code> classes.  The checkout page should display details of the customer's shopping cart and enough payment details to process a transaction and resulting Order for the cart.
 * Simplify checkout page and related controller.
