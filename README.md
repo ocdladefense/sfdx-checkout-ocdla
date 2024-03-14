@@ -8,6 +8,7 @@ These classes were either required as dependencies or had naming conflicts names
 * PaymentMethodController.cls
 * CommunityController.cls
 * CommunityTemplateController.cls
+* OrderConfirmationController.cls
 
 
 ## Relevant links

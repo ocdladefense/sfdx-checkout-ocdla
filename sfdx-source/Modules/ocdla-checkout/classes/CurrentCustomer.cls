@@ -95,15 +95,15 @@ public class CurrentCustomer {
 		
     }
                                                      
-	@testVisible                                         
-	private static Id getCustomerId(Id userId) {
+	
+	public static Id getCustomerId(Id userId) {
                                  
 		User u = [SELECT Id, LinkedCustomerUser__c, ContactId FROM User WHERE Id = :userId];
         
         return null != u.LinkedCustomerUser__c ? getCustomerId(u.LinkedCustomerUser__c) : u.ContactId;
 	}
     
-    private static Id getCustomerId() {
+    public static Id getCustomerId() {
         
         return getCustomerId(UserInfo.getUserId());
     }
