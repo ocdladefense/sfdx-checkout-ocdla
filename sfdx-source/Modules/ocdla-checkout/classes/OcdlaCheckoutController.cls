@@ -232,99 +232,89 @@ global without sharing class OcdlaCheckoutController extends CommunityController
 
 
     
-    public void preSubmitPayment() {
-        System.debug('yoyoyoyo');
-        // this.order = this.processOrderStub();
-    }
+    public PageReference preSubmitPayment() {
+
+        Boolean processedPayment = True;
+        Boolean hasErrors = False;
+        AuthorizeDotNetResponse resp;
+        
+        try {
+                
+
+            
+            AuthNetTransaction tx = new AuthNetTransaction(40.00);
+            tx.payWith('4111111111111111','10/2027');
+
+            CreateTransactionRequest req = new CreateTransactionRequest(tx);
     
-    /*
-    public PageReference submitPayment() {
-        System.debug(this.billingData);
-        
-        TransactionRequest req = new TransactionRequest();
-        req.setAmount(this.opp.Amount);
-        req.setCreditCard(this.ccData);
-        req.setBillToAddress(this.billingData);
-        req.setShipToAddress(this.shippingData);
-
-        AuthorizeDotNetClient client = new AuthorizeDotNetClient(AuthorizeDotNetClient.GATEWAY_SANDBOX_URL);
-        
-        TransactionResponse resp = client.send(req);
-
-        
-        
-        //Map<String, String> newData = transact.getResponse();
-        
-        if (!resp.success()) {
-            // do errors
-            // noo
-            System.debug(this.ccData);
+            AuthorizeDotNetClient client = new AuthorizeDotNetClient();
+            
+            resp = client.send(req);
+			System.debug('AUTH_NET_CLIENT_RESPONSE_RECEIVED');
             System.debug(resp.getBody());
-            return null;
+            
+			processedPayment = resp.success();
+            
+        } catch(Exception e) {
+            
+            hasErrors = True;
+	        ApexPages.addmessage(new ApexPages.message(ApexPages.severity.FATAL, e.getMessage()));
+        }
+            
+        
+        this.cart.Contact__c = CurrentCustomer.getCustomerId();
+        update this.cart;
+        
+
+        	
+        Order odr = ClickpdxOrder.newFromShoppingCart(this.cart);
+        upsert odr;
+           
+        SavePoint sp = Database.setSavePoint();
+	
+        try {
+                
+	        // Make a payment using AuthorizeDotNetApi.
+            if(processedPayment) {
+                
+				Id orderId = ClickpdxOrder.draftOrderFromShoppingCart(this.cart.Id);
+                odr.Status = 'Posted Payment';
+                odr.Payment_Info__c = resp.getBody();//JSON.serialize(ccResp);
+                odr.Origin__c = 'Web Order';
+	            // ClickpdxOrder.activateOrder(orderId);
+                update odr;
+                
+                this.cart.StageName = 'Closed Won';
+                update this.cart;
+                        
+                PageReference nextPage = Page.OrderConfirmation;
+                Map<String,String> params = nextPage.getParameters();
+        
+                params.put('id', odr.Id);
+                
+                // Reading documentation to figure out how to redirect.
+                // return Page.Whatever (where Whatever is the name of the next page in the "flow");
+                nextPage.setRedirect(True);
+                
+                return nextPage;  
+            }
+            // If successful 
+        } catch(Exception e) {
+            
+            hasErrors = True;
+            // Rollback if issue. 
+            Database.rollback(sp);
+	        ApexPages.addmessage(new ApexPages.message(ApexPages.severity.FATAL, e.getMessage()));
         }
         
-       
-        
-        // if..else
-        // success
-		order = this.finalizeOrder(order.Id, resp.getBody());    
-        
-        
-        // 
-        // Takes billing and shipping information using billingData and shippingData and ccData
-        // Submits all information to the credit card processing controller (OcdlaCCAuthorize controller) using static function
-        // Get result from submitting data
-        // if..else success, redirect to order confirmation page. else, "you failed"
-		// if success, calls processOrderStub first, that gets opportunity (which we wont have to do because we call all of this serverside)
-        //         
-		PageReference nextPage = Page.OrderConfirmation;
-        Map<String,String> params = nextPage.getParameters();
-        // processOrderStub() - make sure we can successfully convert the shopping cart into an order
-        // Note: This does NOT create order items. We only create order items when we finalize the order.
-        // 
-        // OcdlaCCAuthorize. - process cc data.
-        // 
-        // finalizeOrder() - creates the order with the verified data.
-        
-        
-        string theOrderId = order.Id;
-        params.put('id', theOrderId);
-        
-        // Reading documentation to figure out how to redirect.
-        // return Page.Whatever (where Whatever is the name of the next page in the "flow");
-        nextPage.setRedirect(True);
-        return nextPage;        
+
+    
+    
+		return null;
     }
     
-    public Order processOrderStub(){
-        // get opportunity id (shopping cart id)
-        // format billing data into map<string, string>
-        // construct billing data (billingfirstname, billinglastname, billingaddress, etc)
-        Order o;
-		System.debug(this.billingData);
-        System.debug(this.shippingData);
-        o = ClickpdxOrder.newFromShoppingCart(this.opp, this.billingData, this.shippingData);
-        upsert o;
-        
-        return [SELECT Id, OrderNumber, EffectiveDate, Status, OpportunityId, AccountId, BillToContactId,
-                               ShipToContactId, PriceBook2Id FROM Order WHERE Id = :o.Id];
-    }
-    */
-    public Order finalizeOrder(String orderId, Map<String,String> ccResp){
-        
-        Order o = new Order();
-        o.Id = orderId;
-        o.Payment_Info__c = JSON.serialize(ccResp);
-        o.Origin__c = 'Web Order';
-        
-        update o; //actually updates
-        
-		ClickpdxOrder.draftOrderLinesFromShoppingCart(o.Id);
-        
-		ClickpdxOrder.activateOrder(orderId);
-        
-        return [SELECT Id, Payment_Info__c, Origin__c FROM Order WHERE Id = :orderId];
-    }
+
+
 
     
     @RemoteAction
@@ -381,6 +371,8 @@ global without sharing class OcdlaCheckoutController extends CommunityController
 
         return CurrentCustomer.isSandbox(); // && isAdmin();
     }
+    
+    
   
     public String getSelectedPaymentMethodText() {
         

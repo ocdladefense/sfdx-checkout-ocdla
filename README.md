@@ -12,7 +12,7 @@ These classes were either required as dependencies or had naming conflicts names
 
 ## Relevant links
 * More information on [dynamic DML](https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_dynamic_dml.htm)
-* [Sandbox checkout page](https://ocdla--ocdpartial.sandbox.my.site.com/OcdlaCheckoutPayment)
+* [Sandbox checkout page](https://ocdla--ocdpartial.sandbox.my.site.com/OcdlaCheckoutPayment?id=006VC000003TnBhYAK)
 * [Sandbox saved payment methods](https://ocdla--ocdpartial.sandbox.my.site.com/SavedPaymentMethods)
 * [Sandbox saved shipping addresses](https://ocdla--ocdpartial.sandbox.my.site.com/SavedShippingAddresses)
 
@@ -36,7 +36,7 @@ This package depends on the Salesforce [@ocdladefense/AuthorizeDotNet](https://g
 
 ## Version History
 ### 0.2.12-NEXT
-The next minor version of should continue progress on the checkout page and the <code>preSubmitPayment()</code> method.  Use DML to create an Order from the Opportunity Object.  Insert the Order object.  Set the Order object to Active.
+The next minor version should continue progress on the checkout page and the <code>preSubmitPayment()</code> method.  Use DML to create an Order from the Opportunity Object.  Insert the Order object.  Set the Order object to Active.
 ### 0.2.11
 Consolidate customer and profile functions into the <code>CurrentCustomer</code> and <code>CustomerProfile</code> classes.  The checkout page should display details of the customer's shopping cart and enough payment details to process a transaction and resulting Order for the cart.
 * Simplify checkout page and related controller.
