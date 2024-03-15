@@ -36,11 +36,19 @@ OCDLA would like to thank our spring and fall '23 web development interns for th
 This package depends on the Salesforce [@ocdladefense/AuthorizeDotNet](https://github.com/ocdladefense/sfdx-ecommerce/tree/development) unlocked package to process Transactions against the Authorize.net payment gateway.
 
 ## Version History
-### 0.2.12-NEXT
+
+### 0.2.13
+Create two new classes:
+* CartContainer, Description of CartContainer
+* OrderContainer, Description of OrderContainer
+
+
+### 0.2.12
 The next minor version should continue progress on the checkout page and the <code>submitPayment()</code> method.  Use DML to create an Order from the Opportunity Object.  Insert the Order object.  Set the Order object to Active. The following classes will be updated:
 * OcdlaCheckoutController.cls - Outline a complete Transaction flow in <code>submitPayment()</code>.
 * OrderConfirmationController.cls
-* ClickpdxOrder.cls - Updated to make the returned Order SObject compatible with <code>upsert</code> operation.
+* OcdlaCheckoutPayment.vfp
+
 ### 0.2.11
 Consolidate customer and profile functions into the <code>CurrentCustomer</code> and <code>CustomerProfile</code> classes.  The checkout page should display details of the customer's shopping cart and enough payment details to process a transaction and resulting Order for the cart.
 * Simplify checkout page and related controller.

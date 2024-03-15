@@ -1,11 +1,11 @@
-global without sharing class OcdlaCheckoutController extends CommunityController {
-	
-    
-    public String cartId {get; private set;}
+public without sharing class OcdlaCheckoutController extends CommunityController {
     
     
     // The loaded Shopping cart for this customer.
-    private Opportunity cart {get; set;}
+    private CartContainer cart {get; set;}
+    
+    // The loaded Shopping cart for this customer.
+    private Id cartId {get {return this.cart.getId();} private set;}
 
     
     // The current customer for this Shopping cart.
@@ -15,7 +15,7 @@ global without sharing class OcdlaCheckoutController extends CommunityController
     // Order would be produced on successful transaction.
     // Otherwise we would ideally rollback so that the Order is
     // actually not persisted.
-    Order order {get; private set;}
+    // Order order {get; private set;}
 
 	
     // Whether the current user is a logged in customer.
@@ -33,7 +33,7 @@ global without sharing class OcdlaCheckoutController extends CommunityController
     
     // Boolean indicating whether the Shopping cart contains
     // any shippable products.
-    public Boolean hasShippableProducts {get {return hasShippableProducts(this.cartId);}private set;}
+    public Boolean hasShippableProducts {get {return this.cart.hasShippableProducts();} private set;}
 
     
     // Whether to show payment-related options at checkout.
@@ -77,14 +77,14 @@ global without sharing class OcdlaCheckoutController extends CommunityController
         super('CheckoutCommunityConfig');
 
 		Map<String,String> params = ApexPages.CurrentPage().getParameters();
-		this.cartId = params.get('id');
+		Id cartId = params.get('id');
         
         if(null == cartId) {
             throw new CheckoutException('CHECKOUT_INIT_ERROR: No valid cartId provided (NULL).');
         }
 
         
-        this.cart = [SELECT Id, Name, Amount, StageName, AccountId, Contact__c, Pricebook2Id FROM Opportunity WHERE Id = :this.cartId];
+        this.cart = new CartContainer(this.cartId);
         
 
         // Pulled from Authorize dot net 3/9/2024.
@@ -100,9 +100,9 @@ global without sharing class OcdlaCheckoutController extends CommunityController
 
         this.hasShippableProducts = False;
         
-        this.isPaid = this.cart.StageName == 'Closed Won';
+        this.isPaid = (String)this.cart.get('StageName') == 'Closed Won';
         
-        this.isFreeCart = !(this.cart.Amount > 0.00);
+        this.isFreeCart = !((Decimal)this.cart.get('Amount') > 0.00);
                 
         // No need to render payment inputs if the Order was already placed,
         // or if no payment is required.
@@ -131,16 +131,7 @@ global without sharing class OcdlaCheckoutController extends CommunityController
 		return options;
 	}
 
-    
-
-    
-    
-    
-
-    
-   
-
-    
+    	
     
     public String getDefaultPaymentProfileBillingAddressFormatted() {
         
@@ -159,69 +150,14 @@ global without sharing class OcdlaCheckoutController extends CommunityController
         return addy;
     }
     
-
-    
-
-    
-    
-
-    
-    
-    public PageReference checkoutAsGuest() {
-        System.debug('am I being called???');
-        System.debug('Hallo!!');
-        
-		
-        PageReference nextPage = Page.OcdlaCheckoutPayment;
-        Map<String,String> params = nextPage.getParameters();
-        
-        params.put('id', this.cartId);
-
-        
-        // Collect FirstName, LastName, Email, AccountId.
-        // 
-        // Creating a new Contact in our CRM with the above values.
-        
-
-        
-        // Creates guest contact, attaches to opportunity, inserts contact, then updates opportunity all in one go
-        // customer = ClickpdxCheckoutGuestController.generateGuestCheckoutContact(customer, this.cartId);
-        this.customer.AccountId = CurrentCustomer.getGuestCheckoutAccountId();
-        upsert this.customer;
-        
-        // Guest customer now has an Id, which we want to associate with the underlying Opportunity.
-        attachAccount(this.customer, this.cartId);
-        
-        
-        // Reading documentation to figure out how to redirect.
-        // return Page.Whatever (where Whatever is the name of the next page in the "flow");
-        nextPage.setRedirect(False);
-        return nextPage;
-    }
-
-
-    public PageReference redirectIfSobjectError(){
-		return OrgOcdla.redirectTo(OrgOcdla.SHOPPING_CART_REGENERATE_OPPORTUNITY_PAGE);
-    }
-    
-    @RemoteAction
-    global static Boolean attachAccount(Contact c, String oppId){
-        Id accountId;
-        
-        // accountId = 
-        Opportunity opp = new Opportunity(Id = oppId, AccountId = c.AccountId, Contact__c=c.Id);
-        update opp;
-        return True;
-    }
-    
         
     public String getCartName() {
-        return this.cart.Name;
+        return (String)this.cart.get('Name');
     }
     
     
     public String getCartTotal() {
-        return String.valueOf(this.cart.Amount);
+        return String.valueOf(this.cart.get('Amount'));
     }
     
     
@@ -237,6 +173,17 @@ global without sharing class OcdlaCheckoutController extends CommunityController
         Boolean processedPayment = True;
         Boolean hasErrors = False;
         AuthorizeDotNetResponse resp;
+        OrderContainer ordr;
+        
+        
+        // Creates guest contact, attaches to opportunity, inserts contact, then updates opportunity all in one go
+        // customer = ClickpdxCheckoutGuestController.generateGuestCheckoutContact(customer, this.cartId);
+        // this.customer.AccountId = CurrentCustomer.getGuestCheckoutAccountId();
+        // upsert this.customer;
+        
+        // Guest customer now has an Id, which we want to associate with the underlying Opportunity.
+        // this.cart.attachAccount(this.customer);
+        
         
         try {
                 
@@ -262,13 +209,14 @@ global without sharing class OcdlaCheckoutController extends CommunityController
         }
             
         
-        this.cart.Contact__c = CurrentCustomer.getCustomerId();
-        update this.cart;
+        this.cart.put('Contact__c', CurrentCustomer.getCustomerId());
+        this.cart.save();
         
 
         	
-        Order odr = ClickpdxOrder.newFromShoppingCart(this.cart);
-        upsert odr;
+        ordr = OrderContainer.newFromShoppingCart(this.cartId);
+        // OrderContainer.draftOrderFromShoppingCart(this.cart.Id);
+        Id orderId = ordr.save();
            
         SavePoint sp = Database.setSavePoint();
 	
@@ -277,20 +225,19 @@ global without sharing class OcdlaCheckoutController extends CommunityController
 	        // Make a payment using AuthorizeDotNetApi.
             if(processedPayment) {
                 
-				Id orderId = ClickpdxOrder.draftOrderFromShoppingCart(this.cart.Id);
-                odr.Status = 'Posted Payment';
-                odr.Payment_Info__c = resp.getBody();//JSON.serialize(ccResp);
-                odr.Origin__c = 'Web Order';
-	            // ClickpdxOrder.activateOrder(orderId);
-                update odr;
+                ordr.put('Status', 'Posted Payment');
+                ordr.put('Payment_Info__c', resp.getBody());
+                ordr.put('Origin__c', 'Web Order');
+	            // OrderContainer.activateOrder(orderId);
+                ordr.save();
                 
-                this.cart.StageName = 'Closed Won';
-                update this.cart;
+                this.cart.put('StageName', 'Closed Won');
+                this.cart.save();
                         
                 PageReference nextPage = Page.OrderConfirmation;
                 Map<String,String> params = nextPage.getParameters();
         
-                params.put('id', odr.Id);
+                params.put('id', ordr.getId());
                 
                 // Reading documentation to figure out how to redirect.
                 // return Page.Whatever (where Whatever is the name of the next page in the "flow");
@@ -314,57 +261,6 @@ global without sharing class OcdlaCheckoutController extends CommunityController
     }
     
 
-
-
-    
-    @RemoteAction
-    global static List<Contact> checkOrderEmail(String email){
-       String out = email.trim();
-        
-       Map<String,String> resp = new Map<String,String>();
-        
-       List<Contact> c = [SELECT FirstName, LastName, Email, MailingStreet, MailingPostalCode, MailingCity, Ocdla_Address_Line_1__c, 
-                          Ocdla_Address_Line_2__c, MailingStateCode, AccountId, Account.Name FROM Contact WHERE Email = :out OR OrderApi__Work_Email__c = :out];
-       
-       return c;
-    }
-
-    
-    
-    @RemoteAction
-    global static Contact generateGuestCheckoutContact(Contact c, Id oppId){
-        String firstName = c.FirstName;
-        String lastName = c.LastName;
-        String emails = c.Email;
-        
-        
-        
-        
-        Contact guest = new Contact(AccountId = CurrentCustomer.getGuestCheckoutAccountId(), 
-                                    FirstName = c.FirstName,
-                                    LastName = c.LastName,
-                                    Email = c.Email,
-                                    OrderApi__Work_Email__c = c.Email);
-        
-        insert guest;
-        attachAccount(guest,oppId);
-        return guest;
- 
-    }    
-    
-    
-
-    private static Boolean hasShippableProducts(Id cartId){
-        List<OpportunityLineItem> lines = [SELECT Id, Product2.IsShippable__c FROM OpportunityLineItem WHERE OpportunityId = :cartId];
-        
-        for(OpportunityLineItem line :lines){
-            if(line.Product2.IsShippable__c) return True;
-        }
-        
-        return False;
-    }
-
-    
     
 	// Should also determine if the current User has access rights.
     public Boolean getShowPaymentGatewayOptions() {
@@ -379,7 +275,7 @@ global without sharing class OcdlaCheckoutController extends CommunityController
         CustomerPaymentProfile first = this.getFirst();
         
 		return first.cardType + ' ' + first.cardNumber;
-    }
+    }  
 
     
     
