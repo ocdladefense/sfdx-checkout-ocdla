@@ -1,5 +1,5 @@
 # OCDLA Checkout
-OCDLA Checkout is an Org-dependent Salesforce unlocked package implementing standard ecommerce checkout facilities for customers.   These facilities can be divided into a main controller for converting a Salesforce Opportunity object to an Order object; and related Apex classes and Visualforce pages for managing the customer's payment and shipping methods.
+OCDLA Checkout is an Salesforce Org-dependent Unlocked package implementing standard ecommerce checkout facilities for customers.   These facilities can be divided into a main controller for converting a Salesforce Opportunity object to an Order object; and related Apex classes and Visualforce pages for managing the customer's payment and shipping methods.
 
 ## Installation Notes
 
@@ -33,14 +33,14 @@ OCDLA would like to thank our spring and fall '23 web development interns for th
 
 
 ## Dependencies
-This package depends on the Salesforce [@ocdladefense/AuthorizeDotNetApi](https://github.com/ocdladefense/sfdx-ecommerce/tree/development) unlocked package to process Transactions against the Authorize.net payment gateway.
+This package depends on the Salesforce [@ocdladefense/AuthorizeDotNetApi](https://github.com/ocdladefense/sfdx-ecommerce/tree/development) unlocked package to process transactions against the Authorize.net payment gateway.
 
 ## Version History
 
 ### 0.2.13
-Create two new classes:
-* CartContainer, Description of CartContainer
-* OrderContainer, Description of OrderContainer
+Delegate work previously done in the checkout controller to two new classes:
+* CartContainer - A CartContainer instance can retrieve specified Opportunity and OpportunityLineItem records as a shopping cart object.  This object can then be used to add, remove or update additional cart items and can persist changes to the underlying SObject records. 
+* OrderContainer - An OrderContainer instance can retrieve specified Order and OrderItem records as an order object.  This object can then be used to add, update or remove order products within an order and can persist changes to the underlying SObject records.
 
 
 ### 0.2.12
